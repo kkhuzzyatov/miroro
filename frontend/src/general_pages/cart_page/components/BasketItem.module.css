@@ -1,0 +1,39 @@
+.basketItem {
+  display: flex;
+  gap: 16px;
+  background: #fff;
+  padding: 18px;
+  border-radius: 14px;
+  margin-bottom: 16px;
+  border: 1px solid #eee;
+}
+
+.basketImg {
+  width: 90px;
+  height: 125px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.basketInfo {
+  flex: 1;
+}
+
+.price {
+  font-weight: 700;
+}
+
+.controls {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+  align-items: center;
+}
+
+.delete {
+  margin-left: auto;
+  border: none;
+  background: transparent;
+  color: #d32f2f;
+  cursor: pointer;
+}
