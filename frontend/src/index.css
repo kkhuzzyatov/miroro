@@ -1,0 +1,19 @@
+html, body {
+  height: 100%;
+  background: #f0f2f5;
+}
+
+#root {
+  height: 100%;
+}
+
+.appLayout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.pageContent {
+  padding: 20px;
+  padding-bottom: 140px;
+}
