@@ -1,0 +1,33 @@
+.sizes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 0;
+}
+
+.sizeBtn {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+.sizeBtn:hover:not(:disabled) {
+  border-color: #111;
+  transform: translateY(-1px);
+}
+
+.selected {
+  background: #111;
+  color: #fff;
+  border-color: #111;
+}
+
+.sizeBtn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  text-decoration: line-through;
+}

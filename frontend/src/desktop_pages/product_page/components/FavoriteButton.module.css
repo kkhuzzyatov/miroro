@@ -1,0 +1,27 @@
+.heartIcon {
+  width: 28px;
+  height: 28px;
+
+  cursor: pointer;
+  user-select: none;
+
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.heartIcon:hover {
+  transform: scale(1.1);
+  opacity: 0.85;
+}
+
+.heartIcon:active {
+  transform: scale(0.95);
+}
+
+.wrapper {
+  position: relative;
+}
+
+.disabled {
+  pointer-events: none;
+  opacity: 0.4;
+}

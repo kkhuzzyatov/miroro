@@ -1,0 +1,27 @@
+.colors {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 0;
+}
+
+.colorBtn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  box-shadow: 0 0 0 1px #ccc;
+}
+
+.colorBtn:hover {
+  transform: scale(1.15);
+}
+
+.selected {
+  box-shadow:
+    0 0 0 2px #111,
+    0 0 0 5px #fff;
+  transform: scale(1.1);
+}

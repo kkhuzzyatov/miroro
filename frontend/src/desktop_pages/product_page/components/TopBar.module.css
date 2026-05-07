@@ -1,0 +1,25 @@
+.topBar {
+  position: fixed;
+  top: 55px;
+  left: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  height: 48px;
+  padding: 0 12px;
+
+  border-bottom: 1px solid #eee;
+}
+
+.backBtn {
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.favoriteContainer {
+  position: fixed;
+  right: 10px;
+}

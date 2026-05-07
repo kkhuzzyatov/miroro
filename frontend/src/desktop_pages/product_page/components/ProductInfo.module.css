@@ -1,0 +1,20 @@
+.productInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.productTitle {
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.productPrice {
+  font-size: 22px;
+  font-weight: 700;
+  color: #16a34a;
+}
+
+.productDescription {
+  line-height: 1.5;
+}
