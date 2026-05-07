@@ -1,0 +1,32 @@
+# Основное
+spring:
+  application:
+    name: scrapper
+
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+
+  liquibase:
+    change-log: classpath:/migrations/master.xml
+    enabled: true
+
+app:
+  upload:
+    img-path: uploads/img
+
+# Интеграции
+emailverify:
+  key: ${EMAILVERIFY_KEY}
+
+cdek:
+  auth:
+    url: https://api.cdek.ru/v2
+    client-id: ${CDEK_CLIENT_ID}
+    client-secret: ${CDEK_CLIENT_SECRET}
+    country-code: RU
+
+admin:
+  email: ${ADMIN_EMAIL}
+  password: ${ADMIN_PASSWORD}
