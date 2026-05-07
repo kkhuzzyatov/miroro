@@ -1,0 +1,95 @@
+.productPage {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 80px;
+}
+
+.productContent {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.selectorsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cartBar {
+  position: fixed;
+  bottom: 100px;
+
+  left: 50%;
+  transform: translateX(-50%);
+
+  width: 400px;
+
+  padding: 12px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  z-index: 1000;
+}
+
+.cartButton {
+  width: 100%;
+  max-width: 500px;
+
+  height: 48px;
+
+  border: none;
+  border-radius: 8px;
+
+  background: #000;
+  color: #fff;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+}
+
+.cartButton:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.inCart {
+  background: #4CAF50;
+}
+
+.cartCounter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cartCounter button {
+  width: 24px;
+  height: 24px;
+
+  border: none;
+  border-radius: 4px;
+
+  background: #eee;
+  cursor: pointer;
+}
+
+.cartCounter span {
+  min-width: 20px;
+  text-align: center;
+}
+
+.scrollSpacer {
+  width: 150px;
+  height: 300px;
+}
