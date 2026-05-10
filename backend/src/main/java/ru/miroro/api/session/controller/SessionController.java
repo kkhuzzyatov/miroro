@@ -30,7 +30,7 @@ public class SessionController {
     @PostMapping("/login")
     public Session login(@RequestBody LoginRequest request, HttpServletResponse response) {
 
-        Session session = sessionService.login(request.email(), request.password());
+        Session session = sessionService.login(request.username(), request.password());
 
         Cookie cookie = new Cookie("session_token", session.getToken());
         cookie.setHttpOnly(true);
@@ -38,7 +38,7 @@ public class SessionController {
         cookie.setMaxAge(7 * 24 * 60 * 60); // 7 дней
         response.addCookie(cookie);
 
-        System.out.println("new_session: " + session.getEmail());
+        System.out.println("new_session: " + session.getUsername());
         return session;
     }
 

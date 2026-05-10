@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 public class Purchase {
 
     private Integer purchaseId;
-    private String userEmail;
+    private String userUsername;
     private String status;
     private String targetAddress;
     private List<PurchaseItem> purchaseItems;

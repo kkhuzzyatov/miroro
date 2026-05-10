@@ -70,7 +70,7 @@ create table address (
 create table users (
     user_id serial primary key,
     name varchar(255) not null,
-    email varchar(255) not null unique,
+    username varchar(255) not null unique,
     password_hash varchar(60) not null,
     role varchar(255) not null check (role in ('customer', 'admin')),
     address_id integer references address(address_id) on delete restrict
@@ -123,7 +123,7 @@ create table purchase_status_history (
 -- session
 create table session (
     session_id serial primary key,
-    email varchar(255) not null,
+    username varchar(255) not null,
     role varchar(60) not null check (role in ('customer', 'admin')),
     token varchar(255) not null unique,
     expires_at timestamp not null

@@ -1,62 +1,63 @@
 package ru.miroro.common.exception;
 
+import jakarta.persistence.EntityNotFoundException;
+import org.springframework.dao.DuplicateKeyException;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+
+import java.sql.SQLException;
+import java.util.NoSuchElementException;
 
 @ControllerAdvice(basePackages = "ru.miroro.api")
 public class ApiExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException ex) {
-        return ResponseEntity
-                .status(HttpStatus.UNAUTHORIZED) // 401
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED) // 401
                 .body(ex.getMessage());
     }
 
     @ExceptionHandler(SecurityException.class)
     public ResponseEntity<String> handleSecurityException(SecurityException ex) {
-        return ResponseEntity
-                .status(HttpStatus.FORBIDDEN) // 403
+        return ResponseEntity.status(HttpStatus.FORBIDDEN) // 403
                 .body(ex.getMessage());
     }
 
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<String> handleNoSuchElementException(NoSuchElementException ex) {
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND) // 404
+        return ResponseEntity.status(HttpStatus.NOT_FOUND) // 404
                 .body(ex.getMessage());
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<String> handleEntityNotFoundException(EntityNotFoundException ex) {
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND) // 404
+        return ResponseEntity.status(HttpStatus.NOT_FOUND) // 404
                 .body(ex.getMessage());
     }
 
     @ExceptionHandler(EmptyResultDataAccessException.class)
     public ResponseEntity<String> handleEmptyResultDataAccessException(EmptyResultDataAccessException ex) {
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND) // 404
+        return ResponseEntity.status(HttpStatus.NOT_FOUND) // 404
                 .body(ex.getMessage());
     }
 
     @ExceptionHandler(SQLException.class)
     public ResponseEntity<String> handleSqlException(SQLException ex) {
-        return ResponseEntity
-                .status(HttpStatus.CONFLICT) // 409
+        return ResponseEntity.status(HttpStatus.CONFLICT) // 409
                 .body(ex.getMessage());
     }
 
     @ExceptionHandler(DuplicateKeyException.class)
     public ResponseEntity<String> handleDuplicateKeyException(DuplicateKeyException ex) {
-        return ResponseEntity
-                .status(HttpStatus.CONFLICT) // 409
+        return ResponseEntity.status(HttpStatus.CONFLICT) // 409
                 .body(ex.getMessage());
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleException(Exception ex) {
-        return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR) // 409
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR) // 409
                 .body(ex.getMessage());
     }
 }

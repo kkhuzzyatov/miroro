@@ -25,7 +25,7 @@ public class PurchaseRepository {
     public List<Purchase> findAll() {
         String sql = """
                 SELECT p.purchase_id,
-                       u.email,
+                       u.username,
                        ps.name AS status,
                        a.address AS target_address
                   FROM purchase p
@@ -40,7 +40,7 @@ public class PurchaseRepository {
     public List<Purchase> findByUserId(int userId) {
         String sql = """
                 SELECT p.purchase_id,
-                       u.email,
+                       u.username,
                        ps.name AS status,
                        a.address AS target_address
                   FROM purchase p

@@ -5,7 +5,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -28,7 +27,7 @@ public class UserController {
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Пользователь создан"),
         @ApiResponse(responseCode = "400", description = "Некорректные данные"),
-        @ApiResponse(responseCode = "404", description = "Недостижимый email")
+        @ApiResponse(responseCode = "404", description = "Недостижимый username")
     })
     @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED)
@@ -40,7 +39,7 @@ public class UserController {
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Пользователь обновлён"),
         @ApiResponse(responseCode = "403", description = "Недостаточно прав"),
-        @ApiResponse(responseCode = "404", description = "Пользователя с таким email нет")
+        @ApiResponse(responseCode = "404", description = "Пользователя с таким username нет")
     })
     @PutMapping("")
     public User update(
@@ -59,7 +58,7 @@ public class UserController {
                     .findById(userId)
                     .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден"));
 
-            if (!session.getEmail().equals(user.getEmail())) {
+            if (!session.getUsername().equals(user.getUsername())) {
                 throw new SecurityException("Недостаточно прав");
             }
         }
@@ -80,7 +79,9 @@ public class UserController {
         Session session =
                 sessionService.getSessionByToken(token).orElseThrow(() -> new SecurityException("Не авторизован"));
 
-        return userService.findByEmail(session.getEmail()).orElseThrow(() -> new SecurityException("Не авторизован"));
+        return userService
+                .findByUsername(session.getUsername())
+                .orElseThrow(() -> new SecurityException("Не авторизован"));
     }
 
     @Operation(summary = "Получение всех пользователей (admin)")
@@ -101,16 +102,17 @@ public class UserController {
         return userService.findAll();
     }
 
-    @Operation(summary = "Удаление пользователя по email (admin)")
+    @Operation(summary = "Удаление пользователя по username (admin)")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Пользователь удалён"),
         @ApiResponse(responseCode = "403", description = "Доступ запрещён"),
-        @ApiResponse(responseCode = "404", description = "Пользователя с таким email нет")
+        @ApiResponse(responseCode = "404", description = "Пользователя с таким username нет")
     })
     @DeleteMapping("")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteByEmail(
-            @RequestParam("email") String email, @CookieValue(value = "session_token", required = false) String token) {
+    public void deleteByUsername(
+            @RequestParam("username") String username,
+            @CookieValue(value = "session_token", required = false) String token) {
 
         Session session =
                 sessionService.getSessionByToken(token).orElseThrow(() -> new SecurityException("Не авторизован"));
@@ -119,6 +121,6 @@ public class UserController {
             throw new SecurityException("Доступ запрещён");
         }
 
-        userService.deleteByEmail(email);
+        userService.deleteByUsername(username);
     }
 }

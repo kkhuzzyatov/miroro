@@ -1,6 +1,6 @@
 insert into users(
 	name, 
-	email, 
+	username, 
 	password_hash, 
 	role
 ) values(

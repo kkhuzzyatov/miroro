@@ -42,7 +42,7 @@ public class PurchaseController {
 
     private Integer resolveUserId(Session session) {
         User user = userRepository
-                .findByEmail(session.getEmail())
+                .findByUsername(session.getUsername())
                 .orElseThrow(() -> new IllegalStateException("Пользователь не найден"));
         return user.getId();
     }

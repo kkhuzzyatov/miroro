@@ -3,7 +3,7 @@ import { useState } from "react";
 
 export default function RegisterPage() {
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
 
@@ -27,7 +27,7 @@ export default function RegisterPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password, name }),
+        body: JSON.stringify({ username, password, name }),
       });
 
       if (!response.ok) {
@@ -37,7 +37,7 @@ export default function RegisterPage() {
 
       window.location.href = "/login";
     } catch (e: any) {
-      alert("Пользователь с таким email уже существует");
+      alert("Пользователь с таким username уже существует");
     } finally {
       setLoading(false);
     }
@@ -56,12 +56,12 @@ export default function RegisterPage() {
           required
         />
 
-        <label className={styles.label}>Email</label>
+        <label className={styles.label}>Username</label>
         <input
           className={styles.input}
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          type="username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
           required
         />
 

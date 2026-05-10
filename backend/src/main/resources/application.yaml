@@ -17,8 +17,8 @@ app:
     img-path: uploads/img
 
 # Интеграции
-emailverify:
-  key: ${EMAILVERIFY_KEY}
+usernameverify:
+  key: ${USERNAMEVERIFY_KEY}
 
 cdek:
   auth:
@@ -28,5 +28,5 @@ cdek:
     country-code: RU
 
 admin:
-  email: ${ADMIN_EMAIL}
+  username: ${ADMIN_USERNAME}
   password: ${ADMIN_PASSWORD}

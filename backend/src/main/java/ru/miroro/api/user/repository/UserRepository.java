@@ -4,7 +4,6 @@ import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.List;
 import java.util.Optional;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -22,7 +21,7 @@ public class UserRepository {
 
     public void save(User user) {
         String sql = """
-        insert into users (name, email, password_hash, role)
+        insert into users (name, username, password_hash, role)
         values (?, ?, ?, ?)
         """;
 
@@ -33,7 +32,7 @@ public class UserRepository {
                     PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 
                     ps.setString(1, user.getName());
-                    ps.setString(2, user.getEmail());
+                    ps.setString(2, user.getUsername());
                     ps.setString(3, user.getPasswordHash());
                     ps.setString(4, user.getRole());
 
@@ -53,14 +52,14 @@ public class UserRepository {
         return users.stream().findFirst();
     }
 
-    public Optional<User> findByEmail(String email) {
+    public Optional<User> findByUsername(String username) {
         String sql = """
                 select *
                 from users
-                where email = ?
+                where username = ?
                 """;
 
-        List<User> users = jdbcTemplate.query(sql, userMapper, email);
+        List<User> users = jdbcTemplate.query(sql, userMapper, username);
         return users.stream().findFirst();
     }
 
@@ -77,7 +76,7 @@ public class UserRepository {
         String sql = """
                 update users
                 set name = ?,
-                    email = ?,
+                    username = ?,
                     password_hash = ?,
                     role = ?,
                     address_id = ?
@@ -87,7 +86,7 @@ public class UserRepository {
         return jdbcTemplate.update(
                 sql,
                 user.getName(),
-                user.getEmail(),
+                user.getUsername(),
                 user.getPasswordHash(),
                 user.getRole(),
                 user.getAddressId(),
@@ -103,12 +102,12 @@ public class UserRepository {
         return jdbcTemplate.update(sql, id);
     }
 
-    public int deleteByEmail(String email) {
+    public int deleteByUsername(String username) {
         String sql = """
                 delete from users
-                where email = ?
+                where username = ?
                 """;
 
-        return jdbcTemplate.update(sql, email);
+        return jdbcTemplate.update(sql, username);
     }
 }

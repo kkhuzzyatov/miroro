@@ -26,9 +26,9 @@ public class SessionService {
         sessionRepository.deleteExpired(LocalDateTime.now());
     }
 
-    public Session login(String email, String rawPassword) {
+    public Session login(String username, String rawPassword) {
         User user = userRepository
-                .findByEmail(email)
+                .findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Неверная почта или пароль"));
 
         boolean passwordValid = rawPassword.equals(user.getPasswordHash());
@@ -38,7 +38,7 @@ public class SessionService {
         }
 
         Session session = Session.builder()
-                .email(user.getEmail())
+                .username(user.getUsername())
                 .role(user.getRole())
                 .token(UUID.randomUUID().toString())
                 .expiresAt(LocalDateTime.now().plusWeeks(1))

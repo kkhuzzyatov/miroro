@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 public class Session {
 
     private Long sessionId;
-    private String email;
+    private String username;
     private String role;
     private String token;
     private LocalDateTime expiresAt;

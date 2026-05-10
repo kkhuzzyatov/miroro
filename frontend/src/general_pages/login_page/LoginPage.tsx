@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 export default function LoginPage() {
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
 
@@ -24,7 +24,7 @@ export default function LoginPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ username, password }),
       });
 
       if (!res.ok) {
@@ -57,11 +57,11 @@ export default function LoginPage() {
       <form className={styles.loginForm} onSubmit={handleLogin}>
         <h2 className={styles.title}>Вход</h2>
 
-        <label className={styles.label}>Email</label>
+        <label className={styles.label}>Username</label>
         <input
           className={styles.input}
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
           required
         />
 

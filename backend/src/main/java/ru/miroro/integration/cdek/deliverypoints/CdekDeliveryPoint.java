@@ -13,7 +13,7 @@ public class CdekDeliveryPoint {
     private String addressComment;
 
     private String workTime;
-    private String email;
+    private String username;
     private String type;
     private boolean takeOnly;
     private boolean isHandout;

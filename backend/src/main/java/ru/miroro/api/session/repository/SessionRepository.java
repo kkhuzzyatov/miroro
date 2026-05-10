@@ -18,15 +18,15 @@ public class SessionRepository {
 
     public void save(Session session) {
         String sql = """
-            INSERT INTO session (email, role, token, expires_at)
+            INSERT INTO session (username, role, token, expires_at)
             VALUES (?, ?, ?, ?)
             """;
-        jdbcTemplate.update(sql, session.getEmail(), session.getRole(), session.getToken(), session.getExpiresAt());
+        jdbcTemplate.update(sql, session.getUsername(), session.getRole(), session.getToken(), session.getExpiresAt());
     }
 
     public Optional<Session> findByToken(String token) {
         String sql = """
-            SELECT session_id, email, role, token, expires_at
+            SELECT session_id, username, role, token, expires_at
             FROM session
             WHERE token = ?
             """;

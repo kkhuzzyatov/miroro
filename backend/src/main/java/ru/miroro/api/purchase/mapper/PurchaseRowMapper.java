@@ -13,7 +13,7 @@ public class PurchaseRowMapper implements RowMapper<Purchase> {
     public Purchase mapRow(ResultSet rs, int rowNum) throws SQLException {
         return Purchase.builder()
                 .purchaseId(rs.getInt("purchase_id"))
-                .userEmail(rs.getString("email"))
+                .userUsername(rs.getString("username"))
                 .status(rs.getString("status"))
                 .targetAddress(rs.getString("target_address"))
                 .build();
