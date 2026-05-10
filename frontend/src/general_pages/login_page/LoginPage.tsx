@@ -8,15 +8,24 @@ export default function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
+  const [error, setError] = useState("");
 
   const setCookie = (name: string, value: string, days = 7) => {
     const expires = new Date(Date.now() + days * 864e5).toUTCString();
+
     document.cookie =
-      name + "=" + encodeURIComponent(value) + "; expires=" + expires + "; path=/";
+      name +
+      "=" +
+      encodeURIComponent(value) +
+      "; expires=" +
+      expires +
+      "; path=/";
   };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    setError("");
 
     try {
       const res = await fetch("/api/sessions/login", {
@@ -29,7 +38,9 @@ export default function LoginPage() {
 
       if (!res.ok) {
         const text = await res.text();
-        alert(text || "Ошибка входа");
+
+        setError(text || "Ошибка авторизации");
+
         return;
       }
 
@@ -37,18 +48,14 @@ export default function LoginPage() {
 
       const token = data?.token;
 
-      if (!token) {
-        alert("Токен не найден в ответе сервера");
-        return;
-      }
-
       setCookie("session_token", token);
 
       navigate("/");
       window.location.reload();
     } catch (err) {
       console.error(err);
-      alert("Ошибка сети");
+
+      setError("Что-то пошло не так. Попробуйте ещё раз.");
     }
   };
 
@@ -57,7 +64,26 @@ export default function LoginPage() {
       <form className={styles.loginForm} onSubmit={handleLogin}>
         <h2 className={styles.title}>Вход</h2>
 
+        {error && (
+          <div
+            style={{
+              width: "100%",
+              background: "#ffebeb",
+              border: "1px solid #ff4d4f",
+              color: "#b00020",
+              padding: "12px",
+              borderRadius: "8px",
+              marginBottom: "16px",
+              fontSize: "14px",
+              boxSizing: "border-box",
+            }}
+          >
+            {error}
+          </div>
+        )}
+
         <label className={styles.label}>Username</label>
+
         <input
           className={styles.input}
           value={username}
@@ -92,7 +118,11 @@ export default function LoginPage() {
         <button
           type="button"
           className={styles.submitButton}
-          style={{ marginTop: "12px", background: "#e0e0e0", color: "#333" }}
+          style={{
+            marginTop: "12px",
+            background: "#e0e0e0",
+            color: "#333",
+          }}
           onClick={() => navigate("/register")}
         >
           Зарегистрироваться

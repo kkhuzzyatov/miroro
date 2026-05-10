@@ -1,12 +1,10 @@
 insert into users(
-	name, 
 	username, 
 	password_hash, 
 	role
 ) values(
-	'Kamil', 
-	'kkhuzzyatov@gmail.com', 
-	'1234', 
+	'khuzzyatov',
+	'kkhuzzyatov',
 	'admin'
 );
 

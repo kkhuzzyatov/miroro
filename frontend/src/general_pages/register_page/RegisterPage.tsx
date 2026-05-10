@@ -2,7 +2,7 @@ import styles from "./RegisterPage.module.css";
 import { useState } from "react";
 
 export default function RegisterPage() {
-  const [name, setName] = useState("");
+  const [name] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -10,12 +10,27 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const setCookie = (name: string, value: string, days = 7) => {
+    const expires = new Date(Date.now() + days * 864e5).toUTCString();
+
+    document.cookie =
+      name +
+      "=" +
+      encodeURIComponent(value) +
+      "; expires=" +
+      expires +
+      "; path=/";
+  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    setError("");
+
     if (password !== confirm) {
-      alert("Пароли не совпадают");
+      setError("Пароли не совпадают");
       return;
     }
 
@@ -32,12 +47,39 @@ export default function RegisterPage() {
 
       if (!response.ok) {
         const text = await response.text();
-        throw new Error(text || "Ошибка регистрации");
+
+        setError(text || "Что-то пошло не так. Попробуйте ещё раз.");
+
+        return;
       }
 
-      window.location.href = "/login";
-    } catch (e: any) {
-      alert("Пользователь с таким username уже существует");
+      const loginResponse = await fetch("/api/sessions/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, password }),
+      });
+
+      if (!loginResponse.ok) {
+        const text = await loginResponse.text();
+
+        setError(text || "Что-то пошло не так. Попробуйте ещё раз.");
+
+        return;
+      }
+
+      const data = await loginResponse.json();
+
+      const token = data?.token;
+
+      setCookie("session_token", token);
+
+      window.location.href = "/";
+    } catch (e) {
+      console.error(e);
+
+      setError("Что-то пошло не так. Попробуйте ещё раз.");
     } finally {
       setLoading(false);
     }
@@ -48,24 +90,36 @@ export default function RegisterPage() {
       <form className={styles.registrationForm} onSubmit={submit}>
         <h2 className={styles.title}>Регистрация</h2>
 
-        <label className={styles.label}>Имя</label>
-        <input
-          className={styles.input}
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-        />
+        {error && (
+          <div
+            style={{
+              width: "100%",
+              background: "#ffebeb",
+              border: "1px solid #ff4d4f",
+              color: "#b00020",
+              padding: "12px",
+              borderRadius: "8px",
+              marginBottom: "16px",
+              fontSize: "14px",
+              boxSizing: "border-box",
+            }}
+          >
+            {error}
+          </div>
+        )}
 
         <label className={styles.label}>Username</label>
+
         <input
           className={styles.input}
-          type="username"
+          type="text"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           required
         />
 
         <label className={styles.label}>Пароль</label>
+
         <div className={styles.passwordContainer}>
           <input
             className={styles.passwordInput}
@@ -74,6 +128,7 @@ export default function RegisterPage() {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
+
           <button
             type="button"
             className={styles.toggleButton}
@@ -84,6 +139,7 @@ export default function RegisterPage() {
         </div>
 
         <label className={styles.label}>Подтверждение</label>
+
         <div className={styles.passwordContainer}>
           <input
             className={styles.passwordInput}
@@ -92,6 +148,7 @@ export default function RegisterPage() {
             onChange={(e) => setConfirm(e.target.value)}
             required
           />
+
           <button
             type="button"
             className={styles.toggleButton}

@@ -69,11 +69,9 @@ create table address (
 -- users
 create table users (
     user_id serial primary key,
-    name varchar(255) not null,
     username varchar(255) not null unique,
     password_hash varchar(60) not null,
-    role varchar(255) not null check (role in ('customer', 'admin')),
-    address_id integer references address(address_id) on delete restrict
+    role varchar(255) not null check (role in ('customer', 'admin'))
 );
 
 -- product_item

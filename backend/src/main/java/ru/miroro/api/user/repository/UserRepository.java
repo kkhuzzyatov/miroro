@@ -5,6 +5,7 @@ import java.sql.Statement;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -21,24 +22,27 @@ public class UserRepository {
 
     public void save(User user) {
         String sql = """
-        insert into users (name, username, password_hash, role)
-        values (?, ?, ?, ?)
+        insert into users (username, password_hash, role)
+        values (?, ?, ?)
         """;
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
-        jdbcTemplate.update(
-                connection -> {
-                    PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+        try {
+            jdbcTemplate.update(
+                    connection -> {
+                        PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 
-                    ps.setString(1, user.getName());
-                    ps.setString(2, user.getUsername());
-                    ps.setString(3, user.getPasswordHash());
-                    ps.setString(4, user.getRole());
+                        ps.setString(1, user.getUsername());
+                        ps.setString(2, user.getPasswordHash());
+                        ps.setString(3, user.getRole());
 
-                    return ps;
-                },
-                keyHolder);
+                        return ps;
+                    },
+                    keyHolder);
+        } catch (DuplicateKeyException e) {
+            throw new DuplicateKeyException("Этот username уже занят");
+        }
     }
 
     public Optional<User> findById(Long id) {
@@ -75,21 +79,17 @@ public class UserRepository {
     public int update(User user) {
         String sql = """
                 update users
-                set name = ?,
-                    username = ?,
+                set username = ?,
                     password_hash = ?,
-                    role = ?,
-                    address_id = ?
+                    role = ?
                 where user_id = ?
                 """;
 
         return jdbcTemplate.update(
                 sql,
-                user.getName(),
                 user.getUsername(),
                 user.getPasswordHash(),
                 user.getRole(),
-                user.getAddressId(),
                 user.getId());
     }
 

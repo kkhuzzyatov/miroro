@@ -32,11 +32,9 @@ public class UserService {
 
     public void create(UserDtoRequest dto) {
         User user = new User();
-        user.setName(dto.getName());
         user.setUsername(dto.getUsername());
         user.setPasswordHash(dto.getPassword());
         user.setRole("customer");
-        user.setAddressId(dto.getAddressId());
 
         userRepository.save(user);
     }
@@ -45,16 +43,8 @@ public class UserService {
 
         User user = userRepository.findById(userId).orElseThrow(() -> new NoSuchElementException("User not found"));
 
-        if (dto.getName() != null) {
-            user.setName(dto.getName());
-        }
-
         if (dto.getPassword() != null) {
             user.setPasswordHash(hashPassword(dto.getPassword()));
-        }
-
-        if (dto.getAddressId() != null) {
-            user.setAddressId(dto.getAddressId());
         }
 
         userRepository.update(user);

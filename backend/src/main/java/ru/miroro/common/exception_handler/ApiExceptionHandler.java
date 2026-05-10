@@ -1,4 +1,4 @@
-package ru.miroro.common.exception;
+package ru.miroro.common.exception_handler;
 
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.dao.DuplicateKeyException;
