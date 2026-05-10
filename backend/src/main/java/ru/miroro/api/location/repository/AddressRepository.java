@@ -18,7 +18,7 @@ public class AddressRepository {
     private final JdbcTemplate jdbcTemplate;
 
     private final RowMapper<Address> rowMapper =
-            (rs, _) -> new Address(rs.getInt("address_id"), rs.getString("address"), rs.getString("city_uuid"));
+            (rs, size) -> new Address(rs.getInt("address_id"), rs.getString("address"), rs.getString("city_uuid"));
 
     public Address findByName(String name) {
         String sql = """

@@ -12,7 +12,7 @@ public class CityRepository {
 
     private final JdbcTemplate jdbcTemplate;
 
-    private final RowMapper<City> rowMapper = (rs, _) -> new City(rs.getString("city_uuid"), rs.getString("name"));
+    private final RowMapper<City> rowMapper = (rs, size) -> new City(rs.getString("city_uuid"), rs.getString("name"));
 
     public City findByName(String name) {
         String sql = """
