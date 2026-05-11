@@ -6,6 +6,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.miroro.api.session.model.Session;
 import ru.miroro.api.session.repository.SessionRepository;
 import ru.miroro.api.user.entity.User;
@@ -13,24 +14,24 @@ import ru.miroro.api.user.repository.UserRepository;
 
 @RequiredArgsConstructor
 @Service
+@Transactional
 public class SessionService {
 
     private final SessionRepository sessionRepository;
     private final UserRepository userRepository;
 
-    @Scheduled(fixedRate = 1000 * 60 * 60 * 24) // каждые 24 часа
+    @Scheduled(fixedRate = 1000 * 60 * 60 * 24)
     public void cleanupExpiredSessions() {
         sessionRepository.deleteExpired(LocalDateTime.now());
     }
 
     public Session login(String username, String rawPassword) {
+
         User user = userRepository
                 .findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("message: Неверный username или пароль"));
 
-        boolean passwordValid = rawPassword.equals(user.getPasswordHash());
-
-        if (!passwordValid) {
+        if (!rawPassword.equals(user.getPasswordHash())) {
             throw new IllegalArgumentException("message: Неверный username или пароль");
         }
 
@@ -41,27 +42,34 @@ public class SessionService {
                 .expiresAt(LocalDateTime.now().plusWeeks(1))
                 .build();
 
-        sessionRepository.save(session);
-        return session;
+        return sessionRepository.save(session);
     }
 
     public void logout(String token) {
+
         if (token == null || token.isBlank()) {
             return;
         }
+
         sessionRepository.deleteByToken(token);
     }
 
+    @Transactional(readOnly = true)
     public Optional<Session> getSessionByToken(String token) {
+
         if (token == null || token.isBlank()) {
             return Optional.empty();
         }
 
-        return sessionRepository.findByToken(token).filter(session -> session.getExpiresAt()
-                .isAfter(LocalDateTime.now()));
+        return sessionRepository.findByToken(token).filter(s -> s.getExpiresAt().isAfter(LocalDateTime.now()));
     }
 
+    @Transactional(readOnly = true)
     public boolean isValid(String token) {
-        return sessionRepository.existsByToken(token);
+
+        return sessionRepository
+                .findByToken(token)
+                .map(s -> s.getExpiresAt().isAfter(LocalDateTime.now()))
+                .orElse(false);
     }
 }
