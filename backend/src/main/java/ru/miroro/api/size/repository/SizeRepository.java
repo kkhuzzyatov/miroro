@@ -1,23 +1,14 @@
 package ru.miroro.api.size.repository;
 
-import java.util.List;
+import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
 import ru.miroro.api.size.model.Size;
 
-public interface SizeRepository {
+public interface SizeRepository extends JpaRepository<Size, Integer> {
 
-    List<Size> findAll();
+    Optional<Size> findByName(String name);
 
-    Size findById(int sizeId);
+    void deleteByName(String name);
 
-    Size findByName(String name);
-
-    void save(Size size);
-
-    int update(Size size);
-
-    int deleteById(int sizeId);
-
-    int deleteByName(String name);
-
-    Integer findIdByName(String name);
+    boolean existsByName(String name);
 }
