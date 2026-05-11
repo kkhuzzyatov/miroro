@@ -5,8 +5,8 @@ import org.springframework.stereotype.Service;
 import ru.miroro.api.color.model.Color;
 import ru.miroro.api.color.repository.ColorRepository;
 
-@Service
 @RequiredArgsConstructor
+@Service
 public class ColorService {
 
     private final ColorRepository colorRepository;

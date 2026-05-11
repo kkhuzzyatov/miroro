@@ -3,6 +3,7 @@ package ru.miroro.api.session.service;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import ru.miroro.api.session.model.Session;
@@ -10,16 +11,12 @@ import ru.miroro.api.session.repository.SessionRepository;
 import ru.miroro.api.user.entity.User;
 import ru.miroro.api.user.repository.UserRepository;
 
+@RequiredArgsConstructor
 @Service
 public class SessionService {
 
     private final SessionRepository sessionRepository;
     private final UserRepository userRepository;
-
-    public SessionService(SessionRepository sessionRepository, UserRepository userRepository) {
-        this.sessionRepository = sessionRepository;
-        this.userRepository = userRepository;
-    }
 
     @Scheduled(fixedRate = 1000 * 60 * 60 * 24) // каждые 24 часа
     public void cleanupExpiredSessions() {

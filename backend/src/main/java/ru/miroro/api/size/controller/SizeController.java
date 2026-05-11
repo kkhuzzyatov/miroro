@@ -14,9 +14,9 @@ import ru.miroro.api.size.repository.SizeRepository;
 import ru.miroro.api.size.service.SizeService;
 import ru.miroro.common.security.AuthorizationService;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/sizes")
-@RequiredArgsConstructor
 @Tag(name = "Sizes", description = "Управление размерами")
 public class SizeController {
 

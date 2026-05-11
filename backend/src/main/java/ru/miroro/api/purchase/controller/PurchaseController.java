@@ -25,9 +25,9 @@ import ru.miroro.api.user.entity.User;
 import ru.miroro.api.user.repository.UserRepository;
 import ru.miroro.common.security.AuthorizationService;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/purchases")
-@RequiredArgsConstructor
 @Tag(name = "Purchases", description = "Управление покупками")
 public class PurchaseController {
 

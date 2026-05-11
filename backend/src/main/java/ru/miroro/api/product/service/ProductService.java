@@ -16,8 +16,8 @@ import ru.miroro.api.product.model.Product;
 import ru.miroro.api.product.model.Variant;
 import ru.miroro.api.product.repository.ProductRepository;
 
-@Service
 @RequiredArgsConstructor
+@Service
 @Transactional
 public class ProductService {
 

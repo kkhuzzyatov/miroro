@@ -6,8 +6,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.miroro.api.purchase_status.model.PurchaseStatus;
 
-@Repository
 @RequiredArgsConstructor
+@Repository
 public class PurchaseStatusRepository {
 
     private final JdbcTemplate jdbcTemplate;

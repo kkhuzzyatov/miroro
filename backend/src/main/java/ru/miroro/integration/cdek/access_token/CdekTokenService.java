@@ -12,8 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 @Slf4j
-@Service
 @RequiredArgsConstructor
+@Service
 public class CdekTokenService {
     private final RestTemplate restTemplate;
 

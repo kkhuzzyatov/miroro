@@ -1,15 +1,14 @@
 package ru.miroro.common.exception_handler;
 
 import jakarta.persistence.EntityNotFoundException;
+import java.sql.SQLException;
+import java.util.NoSuchElementException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-
-import java.sql.SQLException;
-import java.util.NoSuchElementException;
 
 @ControllerAdvice(basePackages = "ru.miroro.api")
 public class ApiExceptionHandler {

@@ -11,8 +11,8 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.miroro.api.location.entity.Address;
 
-@Repository
 @RequiredArgsConstructor
+@Repository
 public class AddressRepository {
 
     private final JdbcTemplate jdbcTemplate;

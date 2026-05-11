@@ -10,8 +10,8 @@ import ru.miroro.api.purchase.dto.PurchaseVariantRequest;
 import ru.miroro.api.purchase.model.Purchase;
 import ru.miroro.api.purchase.repository.PurchaseRepository;
 
-@Service
 @RequiredArgsConstructor
+@Service
 @Transactional
 public class PurchaseService {
 

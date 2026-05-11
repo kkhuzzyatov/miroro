@@ -10,8 +10,8 @@ import ru.miroro.api.purchase.mapper.PurchaseRowMapper;
 import ru.miroro.api.purchase.model.Purchase;
 import ru.miroro.api.purchase.model.PurchaseItem;
 
-@Repository
 @RequiredArgsConstructor
+@Repository
 public class PurchaseRepository {
 
     private final JdbcTemplate jdbcTemplate;

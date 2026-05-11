@@ -6,8 +6,8 @@ import org.springframework.stereotype.Service;
 import ru.miroro.api.segment.model.Segment;
 import ru.miroro.api.segment.repository.SegmentRepository;
 
-@Service
 @RequiredArgsConstructor
+@Service
 public class SegmentService {
 
     private final SegmentRepository segmentRepository;

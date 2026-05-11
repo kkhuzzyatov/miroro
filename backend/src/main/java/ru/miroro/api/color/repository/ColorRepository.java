@@ -7,8 +7,8 @@ import org.springframework.stereotype.Repository;
 import ru.miroro.api.color.mapper.ColorRowMapper;
 import ru.miroro.api.color.model.Color;
 
-@Repository
 @RequiredArgsConstructor
+@Repository
 public class ColorRepository {
 
     private final JdbcTemplate jdbcTemplate;

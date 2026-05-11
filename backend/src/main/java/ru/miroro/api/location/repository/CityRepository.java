@@ -6,8 +6,8 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.miroro.api.location.entity.City;
 
-@Repository
 @RequiredArgsConstructor
+@Repository
 public class CityRepository {
 
     private final JdbcTemplate jdbcTemplate;

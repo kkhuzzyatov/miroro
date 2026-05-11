@@ -22,9 +22,9 @@ import ru.miroro.api.segment.repository.SegmentRepository;
 import ru.miroro.api.segment.service.SegmentService;
 import ru.miroro.common.security.AuthorizationService;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/segments")
-@RequiredArgsConstructor
 @Tag(name = "Segments", description = "Управление сегментами")
 public class SegmentController {
 

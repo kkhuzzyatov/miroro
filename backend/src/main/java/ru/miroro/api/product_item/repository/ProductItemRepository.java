@@ -9,8 +9,8 @@ import ru.miroro.api.product_item.dto.CreateProductItemRequest;
 import ru.miroro.api.product_item.dto.ProductItemResponse;
 import ru.miroro.api.product_item.mapper.ProductItemResponseMapper;
 
-@Repository
 @RequiredArgsConstructor
+@Repository
 public class ProductItemRepository {
 
     private final JdbcTemplate jdbcTemplate;

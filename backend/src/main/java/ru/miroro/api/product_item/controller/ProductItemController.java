@@ -18,9 +18,9 @@ import ru.miroro.api.product_item.dto.CreateProductItemRequest;
 import ru.miroro.api.product_item.repository.ProductItemRepository;
 import ru.miroro.common.security.AuthorizationService;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/product-items")
-@RequiredArgsConstructor
 @Tag(name = "Product Items", description = "Управление экземплярами товаров")
 public class ProductItemController {
 

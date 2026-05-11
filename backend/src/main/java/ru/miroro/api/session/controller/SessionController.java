@@ -14,9 +14,9 @@ import ru.miroro.api.session.dto.LoginRequest;
 import ru.miroro.api.session.model.Session;
 import ru.miroro.api.session.service.SessionService;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/sessions")
-@RequiredArgsConstructor
 @Tag(name = "Sessions", description = "Управление сессиями пользователей")
 public class SessionController {
 

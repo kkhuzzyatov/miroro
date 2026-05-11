@@ -15,8 +15,8 @@ import ru.miroro.api.location.repository.AddressRepository;
 import ru.miroro.integration.cdek.access_token.CdekTokenService;
 
 @Slf4j
-@Service
 @RequiredArgsConstructor
+@Service
 public class CdekDeliveryPointService {
     private final RestTemplate restTemplate;
     private final CdekTokenService tokenService;

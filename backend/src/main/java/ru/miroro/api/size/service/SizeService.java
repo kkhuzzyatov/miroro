@@ -5,8 +5,8 @@ import org.springframework.stereotype.Service;
 import ru.miroro.api.size.model.Size;
 import ru.miroro.api.size.repository.SizeRepository;
 
-@Service
 @RequiredArgsConstructor
+@Service
 public class SizeService {
 
     private final SizeRepository sizeRepository;

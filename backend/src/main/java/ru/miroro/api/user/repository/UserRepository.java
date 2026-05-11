@@ -85,12 +85,7 @@ public class UserRepository {
                 where user_id = ?
                 """;
 
-        return jdbcTemplate.update(
-                sql,
-                user.getUsername(),
-                user.getPasswordHash(),
-                user.getRole(),
-                user.getId());
+        return jdbcTemplate.update(sql, user.getUsername(), user.getPasswordHash(), user.getRole(), user.getId());
     }
 
     public int deleteById(Long id) {

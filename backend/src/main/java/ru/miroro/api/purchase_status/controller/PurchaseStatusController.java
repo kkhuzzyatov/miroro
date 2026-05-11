@@ -13,9 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.miroro.api.purchase_status.model.PurchaseStatus;
 import ru.miroro.api.purchase_status.repository.PurchaseStatusRepository;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/purchase-statuses")
-@RequiredArgsConstructor
 @Tag(name = "Purchase Statuses", description = "Статусы покупок")
 public class PurchaseStatusController {
 

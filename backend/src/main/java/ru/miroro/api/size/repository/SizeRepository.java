@@ -7,8 +7,8 @@ import org.springframework.stereotype.Repository;
 import ru.miroro.api.size.mapper.SizeRowMapper;
 import ru.miroro.api.size.model.Size;
 
-@Repository
 @RequiredArgsConstructor
+@Repository
 public class SizeRepository {
 
     private final JdbcTemplate jdbcTemplate;

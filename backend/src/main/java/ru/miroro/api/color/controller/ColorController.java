@@ -14,9 +14,9 @@ import ru.miroro.api.color.repository.ColorRepository;
 import ru.miroro.api.color.service.ColorService;
 import ru.miroro.common.security.AuthorizationService;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/colors")
-@RequiredArgsConstructor
 @Tag(name = "Colors", description = "Управление цветами")
 public class ColorController {
 

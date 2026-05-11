@@ -9,8 +9,8 @@ import org.springframework.stereotype.Repository;
 import ru.miroro.api.session.mapper.SessionRowMapper;
 import ru.miroro.api.session.model.Session;
 
-@Repository
 @RequiredArgsConstructor
+@Repository
 public class SessionRepository {
 
     private final JdbcTemplate jdbcTemplate;
