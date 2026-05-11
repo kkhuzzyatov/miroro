@@ -16,17 +16,9 @@ app:
   upload:
     img-path: uploads/img
 
-# Интеграции
-usernameverify:
-  key: ${USERNAMEVERIFY_KEY}
-
 cdek:
   auth:
     url: https://api.cdek.ru/v2
     client-id: ${CDEK_CLIENT_ID}
     client-secret: ${CDEK_CLIENT_SECRET}
     country-code: RU
-
-admin:
-  username: ${ADMIN_USERNAME}
-  password: ${ADMIN_PASSWORD}
