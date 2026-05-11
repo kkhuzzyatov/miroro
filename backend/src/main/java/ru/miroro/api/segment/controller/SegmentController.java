@@ -8,7 +8,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.miroro.api.segment.model.Segment;
 import ru.miroro.api.segment.repository.SegmentRepository;
 import ru.miroro.api.segment.service.SegmentService;
-import ru.miroro.common.security.AuthorizationService;
 
 @RequiredArgsConstructor
 @RestController
@@ -30,7 +29,6 @@ public class SegmentController {
 
     private final SegmentRepository repo;
     private final SegmentService service;
-    private final AuthorizationService authorizationService;
 
     @Operation(summary = "Получить все сегменты")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "Список сегментов")})
@@ -46,10 +44,8 @@ public class SegmentController {
         @ApiResponse(responseCode = "409", description = "Конфликт с ограничениями бд")
     })
     @PostMapping
-    public ResponseEntity<Segment> create(
-            @CookieValue(value = "session_token", required = false) String token, @RequestBody Segment segment) {
-
-        authorizationService.checkAdmin(token);
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Segment> create(@RequestBody Segment segment) {
 
         Segment createdSegment = service.create(segment);
 
@@ -64,12 +60,11 @@ public class SegmentController {
         @ApiResponse(responseCode = "409", description = "Конфликт с ограничениями бд")
     })
     @PutMapping
-    public ResponseEntity<Void> update(
-            @CookieValue(value = "session_token", required = false) String token,
-            @RequestParam("id") int id,
-            @RequestBody Segment segment) {
-        authorizationService.checkAdmin(token);
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> update(@RequestParam("id") int id, @RequestBody Segment segment) {
+
         segment.setId(id);
+
         int updated = repo.update(segment);
 
         if (updated == 0) {
@@ -87,9 +82,9 @@ public class SegmentController {
         @ApiResponse(responseCode = "409", description = "Конфликт с ограничениями бд")
     })
     @DeleteMapping
-    public ResponseEntity<Void> deleteById(
-            @CookieValue(value = "session_token", required = false) String token, @RequestParam("id") int id) {
-        authorizationService.checkAdmin(token);
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteById(@RequestParam("id") int id) {
+
         int deleted = repo.deleteById(id);
 
         if (deleted == 0) {

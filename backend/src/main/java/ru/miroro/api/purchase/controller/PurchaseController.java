@@ -8,7 +8,8 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,11 +20,8 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.miroro.api.purchase.dto.CreatePurchaseRequest;
 import ru.miroro.api.purchase.model.Purchase;
 import ru.miroro.api.purchase.service.PurchaseService;
-import ru.miroro.api.session.model.Session;
-import ru.miroro.api.session.service.SessionService;
 import ru.miroro.api.user.entity.User;
 import ru.miroro.api.user.repository.UserRepository;
-import ru.miroro.common.security.AuthorizationService;
 
 @RequiredArgsConstructor
 @RestController
@@ -32,18 +30,13 @@ import ru.miroro.common.security.AuthorizationService;
 public class PurchaseController {
 
     private final PurchaseService service;
-    private final AuthorizationService authorizationService;
-    private final SessionService sessionService;
     private final UserRepository userRepository;
 
-    private Session getSession(String token) {
-        return sessionService.getSessionByToken(token).orElseThrow(() -> new SecurityException("Не авторизован"));
-    }
-
-    private Integer resolveUserId(Session session) {
+    private Integer resolveUserId(Authentication authentication) {
         User user = userRepository
-                .findByUsername(session.getUsername())
-                .orElseThrow(() -> new IllegalStateException("Пользователь не найден"));
+                .findByUsername(authentication.getName())
+                .orElseThrow(() -> new IllegalArgumentException("message: Пользователь не найден"));
+
         return user.getId();
     }
 
@@ -53,10 +46,10 @@ public class PurchaseController {
         @ApiResponse(responseCode = "403", description = "Доступ запрещён")
     })
     @GetMapping
-    public ResponseEntity<List<Purchase>> getUserPurchases(
-            @CookieValue(value = "session_token", required = false) String token) {
-        Session session = getSession(token);
-        Integer userId = resolveUserId(session);
+    public ResponseEntity<List<Purchase>> getUserPurchases(Authentication authentication) {
+
+        Integer userId = resolveUserId(authentication);
+
         return ResponseEntity.ok(service.findByUserId(userId));
     }
 
@@ -66,9 +59,9 @@ public class PurchaseController {
         @ApiResponse(responseCode = "403", description = "Доступ запрещён")
     })
     @GetMapping("/all")
-    public ResponseEntity<List<Purchase>> getAllPurchases(
-            @CookieValue(value = "session_token", required = false) String token) {
-        authorizationService.checkAdmin(token);
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<Purchase>> getAllPurchases() {
+
         return ResponseEntity.ok(service.findAll());
     }
 
@@ -80,13 +73,12 @@ public class PurchaseController {
         @ApiResponse(responseCode = "409", description = "Конфликт с ограничениями бд")
     })
     @PostMapping
-    public ResponseEntity<Void> create(
-            @CookieValue(value = "session_token", required = false) String token,
-            @RequestBody CreatePurchaseRequest request) {
-        authorizationService.checkAuthorized(token);
-        Session session = getSession(token);
-        Integer userId = resolveUserId(session);
+    public ResponseEntity<Void> create(@RequestBody CreatePurchaseRequest request, Authentication authentication) {
+
+        Integer userId = resolveUserId(authentication);
+
         service.create(request, userId);
+
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
@@ -98,12 +90,11 @@ public class PurchaseController {
         @ApiResponse(responseCode = "409", description = "Конфликт с ограничениями бд")
     })
     @PatchMapping
-    public ResponseEntity<Void> changeStatus(
-            @CookieValue(value = "session_token", required = false) String token,
-            @RequestParam("id") int id,
-            @RequestParam("new_status") String newStatus) {
-        authorizationService.checkAdmin(token);
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> changeStatus(@RequestParam("id") int id, @RequestParam("new_status") String newStatus) {
+
         service.changeStatus(id, newStatus);
+
         return ResponseEntity.ok().build();
     }
 }

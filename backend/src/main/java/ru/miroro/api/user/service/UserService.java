@@ -1,6 +1,5 @@
 package ru.miroro.api.user.service;
 
-import at.favre.lib.crypto.bcrypt.BCrypt;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -41,7 +40,9 @@ public class UserService {
 
     public User update(Long userId, UserDtoRequest dto) {
 
-        User user = userRepository.findById(userId).orElseThrow(() -> new NoSuchElementException("User not found"));
+        User user = userRepository
+                .findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("message: Пользователь не найден"));
 
         if (dto.getPassword() != null) {
             user.setPasswordHash(hashPassword(dto.getPassword()));
@@ -52,11 +53,13 @@ public class UserService {
     }
 
     public void deleteByUsername(String username) {
-        userRepository.findByUsername(username).orElseThrow(() -> new NoSuchElementException("User not found"));
+        userRepository
+                .findByUsername(username)
+                .orElseThrow(() -> new NoSuchElementException("message: Пользователь не найден"));
         userRepository.deleteByUsername(username);
     }
 
     private String hashPassword(String password) {
-        return BCrypt.withDefaults().hashToString(BCRYPT_COST, password.toCharArray());
+        return password;
     }
 }

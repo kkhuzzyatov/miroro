@@ -8,11 +8,18 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import ru.miroro.api.size.model.Size;
 import ru.miroro.api.size.repository.SizeRepository;
 import ru.miroro.api.size.service.SizeService;
-import ru.miroro.common.security.AuthorizationService;
 
 @RequiredArgsConstructor
 @RestController
@@ -22,7 +29,6 @@ public class SizeController {
 
     private final SizeRepository repo;
     private final SizeService service;
-    private final AuthorizationService authorizationService;
 
     @Operation(summary = "Получить все размеры")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "Список размеров")})
@@ -38,9 +44,8 @@ public class SizeController {
         @ApiResponse(responseCode = "409", description = "Конфликт с ограничениями бд")
     })
     @PostMapping
-    public ResponseEntity<Size> create(
-            @CookieValue(value = "session_token", required = false) String token, @RequestBody Size size) {
-        authorizationService.checkAdmin(token);
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Size> create(@RequestBody Size size) {
 
         Size createdSize = service.create(size);
 
@@ -55,16 +60,17 @@ public class SizeController {
         @ApiResponse(responseCode = "409", description = "Конфликт с ограничениями бд")
     })
     @PutMapping
-    public ResponseEntity<Void> update(
-            @CookieValue(value = "session_token", required = false) String token,
-            @RequestParam("id") int id,
-            @RequestBody Size size) {
-        authorizationService.checkAdmin(token);
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> update(@RequestParam("id") int id, @RequestBody Size size) {
+
         size.setId(id);
+
         int updated = repo.update(size);
+
         if (updated == 0) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
+
         return ResponseEntity.ok().build();
     }
 
@@ -76,13 +82,15 @@ public class SizeController {
         @ApiResponse(responseCode = "409", description = "Конфликт с ограничениями бд")
     })
     @DeleteMapping
-    public ResponseEntity<Void> deleteById(
-            @CookieValue(value = "session_token", required = false) String token, @RequestParam("id") int id) {
-        authorizationService.checkAdmin(token);
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteById(@RequestParam("id") int id) {
+
         int deleted = repo.deleteById(id);
+
         if (deleted == 0) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
+
         return ResponseEntity.noContent().build();
     }
 }

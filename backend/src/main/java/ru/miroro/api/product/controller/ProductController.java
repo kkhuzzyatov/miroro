@@ -1,5 +1,6 @@
 package ru.miroro.api.product.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -16,8 +17,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.MultipartBodyBuilder;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,8 +31,6 @@ import org.springframework.web.multipart.MultipartFile;
 import ru.miroro.api.product.model.Image;
 import ru.miroro.api.product.model.Product;
 import ru.miroro.api.product.service.ProductService;
-import ru.miroro.common.security.AuthorizationService;
-import tools.jackson.databind.ObjectMapper;
 
 @RequiredArgsConstructor
 @RestController
@@ -41,12 +40,11 @@ public class ProductController {
 
     private final ProductService service;
     private final ObjectMapper objectMapper;
-    private final AuthorizationService authorizationService;
 
     @Operation(summary = "Получить товары", description = """
                 Если параметр id не указан — возвращает список всех товаров.
-                Если параметр id указан — возвращает один товар или 404, если товар не найден.
-                Если у товара присутствуют изображения — ответ возвращается в формате multipart.
+                Если параметр id указан — возвращает один товар или 404.
+                Если у товара есть изображения — ответ multipart.
                 """)
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Успешный ответ"),
@@ -70,7 +68,7 @@ public class ProductController {
             try (InputStream is = ProductController.class.getClassLoader().getResourceAsStream(image.getPath())) {
 
                 if (is == null) {
-                    throw new RuntimeException("Файл не найден: " + image.getPath());
+                    throw new RuntimeException("message: Файл не найден: " + image.getPath());
                 }
 
                 body.add("images", new ByteArrayResource(is.readAllBytes()) {
@@ -91,13 +89,14 @@ public class ProductController {
         @ApiResponse(responseCode = "409", description = "Конфликт с ограничениями бд")
     })
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> create(
-            @CookieValue(value = "session_token", required = false) String token,
             @RequestPart("product") String productJson,
             @RequestPart(value = "images", required = false) List<MultipartFile> imageFiles)
             throws IOException {
-        authorizationService.checkAdmin(token);
+
         Product product = objectMapper.readValue(productJson, Product.class);
+
         return ResponseEntity.status(HttpStatus.CREATED).body(service.create(product, imageFiles));
     }
 
@@ -109,19 +108,22 @@ public class ProductController {
         @ApiResponse(responseCode = "404", description = "Товар не найден"),
         @ApiResponse(responseCode = "409", description = "Конфликт с ограничениями бд")
     })
-    @PutMapping(value = "", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> update(
-            @CookieValue(value = "session_token", required = false) String token,
             @RequestParam("id") int id,
             @RequestPart("product") String productJson,
             @RequestPart(value = "images", required = false) List<MultipartFile> imageFiles)
             throws IOException {
-        authorizationService.checkAdmin(token);
+
         Product product = objectMapper.readValue(productJson, Product.class);
+
         int updated = service.update(id, product, imageFiles);
+
         if (updated == 0) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
+
         return ResponseEntity.ok().build();
     }
 
@@ -133,9 +135,9 @@ public class ProductController {
         @ApiResponse(responseCode = "409", description = "Конфликт с ограничениями бд")
     })
     @DeleteMapping
-    public ResponseEntity<Void> deleteById(
-            @CookieValue(value = "session_token", required = false) String token, @RequestParam("id") int id) {
-        authorizationService.checkAdmin(token);
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteById(@RequestParam("id") int id) {
+
         int deleted = service.deleteById(id);
 
         if (deleted == 0) {

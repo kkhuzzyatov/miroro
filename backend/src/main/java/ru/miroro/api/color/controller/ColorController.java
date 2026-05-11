@@ -8,11 +8,11 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import ru.miroro.api.color.model.Color;
 import ru.miroro.api.color.repository.ColorRepository;
 import ru.miroro.api.color.service.ColorService;
-import ru.miroro.common.security.AuthorizationService;
 
 @RequiredArgsConstructor
 @RestController
@@ -22,7 +22,6 @@ public class ColorController {
 
     private final ColorRepository repo;
     private final ColorService service;
-    private final AuthorizationService authorizationService;
 
     // ---------- PUBLIC ----------
 
@@ -42,9 +41,8 @@ public class ColorController {
         @ApiResponse(responseCode = "409", description = "Конфликт с ограничениями бд")
     })
     @PostMapping
-    public ResponseEntity<Color> create(
-            @CookieValue(value = "session_token", required = false) String token, @RequestBody Color color) {
-        authorizationService.checkAdmin(token);
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Color> create(@RequestBody Color color) {
 
         Color createdColor = service.create(color);
 
@@ -59,13 +57,11 @@ public class ColorController {
         @ApiResponse(responseCode = "409", description = "Конфликт с ограничениями бд")
     })
     @PutMapping
-    public ResponseEntity<Void> update(
-            @CookieValue(value = "session_token", required = false) String token,
-            @RequestParam("id") int id,
-            @RequestBody Color color) {
-        authorizationService.checkAdmin(token);
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> update(@RequestParam("id") int id, @RequestBody Color color) {
 
         color.setId(id);
+
         int updated = repo.update(color);
 
         if (updated == 0) {
@@ -82,9 +78,8 @@ public class ColorController {
         @ApiResponse(responseCode = "404", description = "Цвет не найден")
     })
     @DeleteMapping
-    public ResponseEntity<Void> deleteById(
-            @CookieValue(value = "session_token", required = false) String token, @RequestParam("id") int id) {
-        authorizationService.checkAdmin(token);
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteById(@RequestParam("id") int id) {
 
         int deleted = repo.deleteById(id);
 

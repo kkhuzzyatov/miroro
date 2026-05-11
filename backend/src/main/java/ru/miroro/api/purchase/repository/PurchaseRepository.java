@@ -89,13 +89,7 @@ public class PurchaseRepository {
                 RETURNING purchase_id
                 """;
 
-        Integer id = jdbcTemplate.queryForObject(sql, Integer.class, userId, statusId, addressId);
-
-        if (id == null) {
-            throw new IllegalStateException("Purchase id not generated");
-        }
-
-        return id;
+        return jdbcTemplate.queryForObject(sql, Integer.class, userId, statusId, addressId);
     }
 
     public void addPurchaseItem(int purchaseId, int productItemId, BigDecimal price) {
