@@ -1,15 +1,27 @@
 package ru.miroro.api.location.entity;
 
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
+@Entity
+@Table(name = "address")
 public class Address {
 
-    private int addressId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "address_id")
+    private Integer id;
+
     private String address;
-    private String cityUuid;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "city_uuid", nullable = false)
+    private City city;
 }

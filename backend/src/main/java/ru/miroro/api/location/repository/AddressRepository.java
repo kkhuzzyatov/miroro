@@ -1,9 +1,10 @@
 package ru.miroro.api.location.repository;
 
+import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
 import ru.miroro.api.location.entity.Address;
 
-public interface AddressRepository {
-    Address findByName(String name);
+public interface AddressRepository extends JpaRepository<Address, Integer> {
 
-    int save(String name, String cityUuid);
+    Optional<Address> findByAddress(String address);
 }
