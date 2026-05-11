@@ -69,7 +69,7 @@ public class CdekTokenService {
                 CdekTokenResponse body = response.getBody();
 
                 if (body == null || body.getAccessToken() == null) {
-                    throw new IllegalStateException("Failed to obtain CDEK token");
+                    throw new Exception("message: Не удалось получить токен CDEK");
                 }
 
                 this.accessToken = body.getAccessToken();

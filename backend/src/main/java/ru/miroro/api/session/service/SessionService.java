@@ -26,12 +26,12 @@ public class SessionService {
     public Session login(String username, String rawPassword) {
         User user = userRepository
                 .findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("Неверный username или пароль"));
+                .orElseThrow(() -> new IllegalArgumentException("message: Неверный username или пароль"));
 
         boolean passwordValid = rawPassword.equals(user.getPasswordHash());
 
         if (!passwordValid) {
-            throw new IllegalArgumentException("Неверный username или пароль");
+            throw new IllegalArgumentException("message: Неверный username или пароль");
         }
 
         Session session = Session.builder()

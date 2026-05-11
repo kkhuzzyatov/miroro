@@ -52,7 +52,7 @@ public class SessionController {
     public void logout(
             @CookieValue(value = "session_token", required = false) String token, HttpServletResponse response) {
         if (token == null || token.isBlank()) {
-            throw new SecurityException("Не авторизован");
+            throw new SecurityException("message: Не авторизован");
         }
 
         Cookie cookie = new Cookie("session_token", "");

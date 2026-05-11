@@ -63,7 +63,7 @@ public class PurchaseService {
             var reserved = repository.reserveProductItems(item.getVariantId(), item.getQuantity());
 
             if (reserved.size() < item.getQuantity()) {
-                throw new IllegalStateException("Недостаточно товара variant_id=" + item.getVariantId());
+                throw new IllegalStateException("message: Недостаточно товара variant_id=" + item.getVariantId());
             }
 
             // создаём purchase_item

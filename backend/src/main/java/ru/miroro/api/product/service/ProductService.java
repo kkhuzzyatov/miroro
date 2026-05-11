@@ -141,7 +141,7 @@ public class ProductService {
                 Path productDir = Paths.get(imageDir, productDirName);
                 deleteDirectory(productDir);
             } catch (IOException e) {
-                throw new RuntimeException("Failed to delete product images", e);
+                throw new RuntimeException("message: Не удалось удалить изображения товара", e);
             }
         }
 

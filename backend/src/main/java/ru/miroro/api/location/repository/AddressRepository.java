@@ -49,7 +49,7 @@ public class AddressRepository {
 
         Map<String, Object> keys = keyHolder.getKeys();
         if (keys == null || !keys.containsKey("address_id")) {
-            throw new RuntimeException("failed to retrieve generated id");
+            throw new RuntimeException("message: Не удалось получить сгенерированный идентификатор");
         }
 
         Number key = (Number) keys.get("address_id");

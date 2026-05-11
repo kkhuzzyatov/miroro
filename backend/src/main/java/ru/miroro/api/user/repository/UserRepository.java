@@ -41,7 +41,7 @@ public class UserRepository {
                     },
                     keyHolder);
         } catch (DuplicateKeyException e) {
-            throw new DuplicateKeyException("Этот username уже занят");
+            throw new DuplicateKeyException("message: Этот username уже занят");
         }
     }
 
