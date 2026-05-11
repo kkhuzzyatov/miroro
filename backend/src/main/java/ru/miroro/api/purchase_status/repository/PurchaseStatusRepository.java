@@ -1,9 +1,6 @@
 package ru.miroro.api.purchase_status.repository;
 
-import java.util.List;
+import org.springframework.data.jpa.repository.JpaRepository;
 import ru.miroro.api.purchase_status.model.PurchaseStatus;
 
-public interface PurchaseStatusRepository {
-
-    List<PurchaseStatus> findAll();
-}
+public interface PurchaseStatusRepository extends JpaRepository<PurchaseStatus, Integer> {}
