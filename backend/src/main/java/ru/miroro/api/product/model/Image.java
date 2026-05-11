@@ -1,23 +1,46 @@
 package ru.miroro.api.product.model;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_NULL) // Игнорировать null поля при сериализации
+@Entity
+@Table(name = "image")
 public class Image {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "image_id")
+    private Integer imageId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id")
+    private Product product;
+
     private String path;
 
-    @JsonProperty("color_id")
+    @Column(name = "color_id")
     private Integer colorId;
 
-    @JsonProperty("is_main")
+    @Column(name = "is_main")
     private Boolean isMain;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Image)) return false;
+
+        Image image = (Image) o;
+
+        return imageId != null && imageId.equals(image.imageId);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

@@ -1,6 +1,5 @@
 package ru.miroro.api.product.service;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -11,185 +10,214 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import ru.miroro.api.product.dto.ProductDto;
+import ru.miroro.api.product.dto.VariantDto;
+import ru.miroro.api.product.mapper.ProductMapper;
 import ru.miroro.api.product.model.Image;
 import ru.miroro.api.product.model.Product;
 import ru.miroro.api.product.model.Variant;
+import ru.miroro.api.product.repository.ImageRepository;
 import ru.miroro.api.product.repository.ProductRepository;
+import ru.miroro.api.product.repository.ProductRepositoryCustom;
+import ru.miroro.api.product.repository.VariantRepository;
 
 @RequiredArgsConstructor
 @Service
 @Transactional
 public class ProductService {
 
-    private final ProductRepository repo;
+    private final ProductRepository productRepository;
+    private final ProductRepositoryCustom productRepositoryCustom;
+    private final VariantRepository variantRepository;
+    private final ImageRepository imageRepository;
+    private final ProductMapper productMapper;
 
     @Value("${app.upload.img-path}")
     private String imageDir;
 
-    // ------------------------------------------------
-    // FIND ALL
-    // ------------------------------------------------
+    // =====================================================
+    // READ
+    // =====================================================
+
     @Transactional(readOnly = true)
-    public List<Product> findAll() {
-        return repo.findAll();
+    public List<ProductDto> findAll() {
+        return productRepositoryCustom.findAllWithDetails().stream()
+                .map(productMapper::toDto)
+                .toList();
     }
 
-    // ------------------------------------------------
-    // FIND BY ID
-    // ------------------------------------------------
     @Transactional(readOnly = true)
-    public Product findById(int id) {
-        return repo.getProductById(id);
+    public ProductDto findById(int id) {
+        Product product = productRepositoryCustom.findByIdWithDetails(id);
+        return product == null ? null : productMapper.toDto(product);
     }
 
-    // ------------------------------------------------
+    // =====================================================
     // CREATE
-    // ------------------------------------------------
-    public Product create(Product product, List<MultipartFile> imageFiles) throws IOException {
+    // =====================================================
 
-        // 1. создаём продукт
-        Product created = repo.addProduct(product);
-        int productId = created.getId();
+    public ProductDto create(ProductDto dto, List<MultipartFile> imageFiles) throws IOException {
 
-        // имя директории продукта (стабильное)
-        String productDirName = "product_" + productId;
+        Product product = productMapper.toEntity(dto);
+        Product saved = productRepository.save(product);
 
-        // 2. сохраняем варианты
-        if (product.getVariants() != null) {
-            for (Variant variant : product.getVariants()) {
-                variant.setQuantity(0);
-                repo.addVariant(productId, variant);
-            }
+        // VARIANTS
+        if (dto.getVariants() != null) {
+            List<Variant> variants = dto.getVariants().stream()
+                    .map(v -> {
+                        Variant variant = new Variant();
+                        variant.setVariantId(null);
+                        variant.setQuantity(v.getQuantity() == null ? 0 : v.getQuantity());
+                        variant.setProduct(saved);
+                        variant.setSizeId(v.getSizeId());
+                        variant.setColorId(v.getColorId());
+                        return variant;
+                    })
+                    .toList();
+
+            variantRepository.saveAll(variants);
         }
 
-        // 3. сохраняем изображения
-        saveImages(product, imageFiles, productId, productDirName);
+        saveImages(saved, imageFiles);
 
-        return repo.getProductById(productId);
+        return productMapper.toDto(productRepositoryCustom.findByIdWithDetails(saved.getId()));
     }
 
-    // ------------------------------------------------
+    // =====================================================
     // UPDATE
-    // ------------------------------------------------
-    public int update(int id, Product product, List<MultipartFile> imageFiles) throws IOException {
+    // =====================================================
 
-        // 1. обновляем базовые поля продукта
-        int updatedRows = repo.updateProduct(id, product);
-        if (updatedRows == 0) {
+    public int update(int id, ProductDto dto, List<MultipartFile> imageFiles) throws IOException {
+
+        Product existing = productRepositoryCustom.findByIdWithDetails(id);
+
+        if (existing == null) {
             return 0;
         }
 
-        // =====================================================
-        // VARIANT DIFF UPDATE
-        // =====================================================
+        existing.setName(dto.getName());
+        existing.setDescription(dto.getDescription());
+        existing.setPrice(dto.getPrice());
+        existing.setSegmentId(dto.getSegmentId());
 
-        // текущие вариации из БД
-        Product existingProduct = repo.getProductById(id);
+        productRepository.save(existing);
 
-        Set<Variant> oldVariants =
-                new HashSet<>(existingProduct.getVariants() == null ? List.of() : existingProduct.getVariants());
+        // VARIANTS
+        List<Variant> oldVariants = variantRepository.findByProductId(id);
 
-        Set<Variant> newVariants = new HashSet<>(product.getVariants() == null ? List.of() : product.getVariants());
-
-        // -------- найти пересечения --------
-        Set<Variant> intersection = new HashSet<>(oldVariants);
-        intersection.retainAll(newVariants);
-
-        // удалить совпадения
-        oldVariants.removeAll(intersection);
-        newVariants.removeAll(intersection);
-
-        // -------- удалить старые --------
-        for (Variant variantToDelete : oldVariants) {
-            repo.removeVariant(id, variantToDelete);
+        Set<String> oldKeys = new HashSet<>();
+        for (Variant v : oldVariants) {
+            oldKeys.add(key(v.getSizeId(), v.getColorId()));
         }
 
-        // -------- добавить новые --------
-        for (Variant variantToAdd : newVariants) {
-            repo.addVariant(id, variantToAdd);
-        }
+        Set<String> newKeys = new HashSet<>();
+        Map<String, VariantDto> newMap = new HashMap<>();
 
-        // =====================================================
-        // IMAGES (оставляем прежнюю стратегию)
-        // =====================================================
-
-        if (imageFiles != null && !imageFiles.isEmpty()) {
-
-            String productDirName = "product_" + id;
-
-            repo.deleteImagesByProductId(id);
-
-            Path productDir = Paths.get(imageDir, productDirName);
-            deleteDirectory(productDir);
-
-            saveImages(product, imageFiles, id, productDirName);
-        }
-
-        return updatedRows;
-    }
-
-    // ------------------------------------------------
-    // DELETE
-    // ------------------------------------------------
-    public int deleteById(int id) {
-
-        int deleted = repo.deleteById(id);
-
-        if (deleted > 0) {
-            try {
-                String productDirName = "product_" + id;
-                Path productDir = Paths.get(imageDir, productDirName);
-                deleteDirectory(productDir);
-            } catch (IOException e) {
-                throw new RuntimeException("message: Не удалось удалить изображения товара", e);
+        if (dto.getVariants() != null) {
+            for (VariantDto v : dto.getVariants()) {
+                String k = key(v.getSizeId(), v.getColorId());
+                newKeys.add(k);
+                newMap.put(k, v);
             }
         }
 
-        return deleted;
+        // delete missing
+        for (Variant v : oldVariants) {
+            String k = key(v.getSizeId(), v.getColorId());
+            if (!newKeys.contains(k)) {
+                variantRepository.delete(v);
+            }
+        }
+
+        // add new
+        for (String k : newKeys) {
+            if (!oldKeys.contains(k)) {
+                VariantDto v = newMap.get(k);
+
+                Variant variant = new Variant();
+                variant.setVariantId(null);
+                variant.setProduct(existing);
+                variant.setSizeId(v.getSizeId());
+                variant.setColorId(v.getColorId());
+                variant.setQuantity(v.getQuantity() == null ? 0 : v.getQuantity());
+
+                variantRepository.save(variant);
+            }
+        }
+
+        // IMAGES
+        if (imageFiles != null && !imageFiles.isEmpty()) {
+
+            imageRepository.deleteByProductId(id);
+
+            Path productDir = Paths.get(imageDir, "product_" + id);
+            deleteDirectory(productDir);
+
+            saveImages(existing, imageFiles);
+        }
+
+        return 1;
     }
 
-    // ============================================================
-    // helpers (у тебя уже были — оставляю без изменений)
-    // ============================================================
+    // =====================================================
+    // DELETE
+    // =====================================================
 
-    private void saveImages(Product product, List<MultipartFile> imageFiles, int productId, String productDirName)
-            throws IOException {
+    public int deleteById(int id) {
+
+        productRepository.deleteById(id);
+
+        try {
+            Path productDir = Paths.get(imageDir, "product_" + id);
+            deleteDirectory(productDir);
+        } catch (IOException e) {
+            throw new RuntimeException("message: Не удалось удалить изображения товара", e);
+        }
+
+        return 1;
+    }
+
+    // =====================================================
+    // IMAGES
+    // =====================================================
+
+    private void saveImages(Product product, List<MultipartFile> imageFiles) throws IOException {
 
         if (imageFiles == null || imageFiles.isEmpty()) {
             return;
         }
 
+        String dir = "product_" + product.getId();
+
         for (MultipartFile file : imageFiles) {
-            if (file != null && !file.isEmpty() && file.getOriginalFilename() != null) {
 
-                String safeFileName = sanitizeFileName(file.getOriginalFilename());
+            if (file == null || file.isEmpty()) continue;
 
-                Path filePath = Paths.get(imageDir, productDirName, safeFileName);
+            String safe = sanitizeFileName(file.getOriginalFilename());
 
-                Files.createDirectories(filePath.getParent());
-                Files.write(filePath, file.getBytes());
+            Path path = Paths.get(imageDir, dir, safe);
 
-                String dbPath = "/img/" + productDirName + "/" + safeFileName;
+            Files.createDirectories(path.getParent());
+            Files.write(path, file.getBytes());
 
-                Image sourceImage = product.getImages().stream()
-                        .filter(img -> img.getPath().equals(file.getOriginalFilename()))
-                        .findFirst()
-                        .orElse(null);
+            Image image = Image.builder()
+                    .product(product)
+                    .path("/img/" + dir + "/" + safe)
+                    .isMain(false)
+                    .build();
 
-                Image imageEntity = Image.builder()
-                        .path(dbPath)
-                        .isMain(sourceImage != null && Boolean.TRUE.equals(sourceImage.getIsMain()))
-                        .colorId(sourceImage != null ? sourceImage.getColorId() : null)
-                        .build();
-
-                repo.addImage(productId, imageEntity);
-            }
+            imageRepository.save(image);
         }
+    }
+
+    private String key(Integer sizeId, Integer colorId) {
+        return sizeId + ":" + colorId;
     }
 
     private void deleteDirectory(Path dir) throws IOException {
         if (Files.exists(dir)) {
-            Files.walk(dir).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
+            Files.walk(dir).sorted(Comparator.reverseOrder()).forEach(p -> p.toFile()
+                    .delete());
         }
     }
 

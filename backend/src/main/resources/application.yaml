@@ -1,7 +1,8 @@
 # Основное
 spring:
-  application:
-    name: scrapper
+  jpa:
+    hibernate:
+      ddl-auto: validate
 
   datasource:
     url: ${DB_URL}

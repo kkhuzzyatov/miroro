@@ -1,25 +1,36 @@
 package ru.miroro.api.product.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.List;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import lombok.*;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Entity
+@Table(name = "product")
 public class Product {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "product_id")
     private Integer id;
+
     private String name;
+
     private String description;
+
+    @Column(name = "current_price")
     private Integer price;
 
-    @JsonProperty("segment_id")
+    @Column(name = "segment_id")
     private Integer segmentId;
 
-    private List<Variant> variants;
-    private List<Image> images;
+    @OneToMany(mappedBy = "product", orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<Variant> variants = new LinkedHashSet<>();
+
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
+    private Set<Image> images = new LinkedHashSet<>();
 }

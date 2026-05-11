@@ -22,16 +22,8 @@ create table product (
     product_id serial primary key,
     name varchar(255) not null unique,
     description text,
-    current_price numeric(10,2) not null check (current_price > 0),
+    current_price int not null check (current_price > 0),
     segment_id int not null references segment(segment_id) on delete restrict
-);
-
--- product_price_history
-create table product_price_history (
-    product_price_history_id serial primary key,
-    product_id int not null references product(product_id) on delete cascade,
-    price numeric(10,2) not null check (price > 0),
-    created_at timestamptz not null default now()
 );
 
 -- variant
@@ -40,7 +32,7 @@ create table variant (
     product_id int not null references product(product_id) on delete cascade,
     size_id int not null references size(size_id) on delete restrict,
     color_id int not null references color(color_id) on delete restrict,
-    quantity integer not null default 0 check (quantity >= 0),
+    quantity int not null default 0 check (quantity >= 0),
     unique (product_id, size_id, color_id)
 );
 
@@ -97,24 +89,24 @@ insert into purchase_status(name) values
 -- purchase
 create table purchase (
     purchase_id serial primary key,
-    user_id integer not null references users(user_id) on delete restrict,
-    status_id integer not null references purchase_status(purchase_status_id) on delete restrict,
-    target_address_id integer not null references address(address_id) on delete restrict
+    user_id int not null references users(user_id) on delete restrict,
+    status_id int not null references purchase_status(purchase_status_id) on delete restrict,
+    target_address_id int not null references address(address_id) on delete restrict
 );
 
 -- purchase_item
 create table purchase_item (
     purchase_item_id serial primary key,
-    purchase_id integer not null references purchase(purchase_id) on delete cascade,
-    product_item_id integer not null references product_item(product_item_id) on delete restrict,
-    price numeric(10,2) not null check (price > 0)
+    purchase_id int not null references purchase(purchase_id) on delete cascade,
+    product_item_id int not null references product_item(product_item_id) on delete restrict,
+    price int not null check (price > 0)
 );
 
 -- purchase_status_history
 create table purchase_status_history (
     purchase_status_history_id serial primary key,
-    purchase_id integer not null references purchase(purchase_id) on delete cascade,
-    previous_status_id integer not null references purchase_status(purchase_status_id) on delete restrict,
+    purchase_id int not null references purchase(purchase_id) on delete cascade,
+    previous_status_id int not null references purchase_status(purchase_status_id) on delete restrict,
     changed_at timestamptz not null
 );
 
@@ -125,13 +117,4 @@ create table session (
     role varchar(60) not null check (role in ('customer', 'admin')),
     token varchar(255) not null unique,
     expires_at timestamp not null
-);
-
--- basket
-create table basket (
-    basket_id serial primary key,
-    user_id integer not null references users(user_id),
-    variant_id int not null references variant(variant_id) on delete restrict,
-    quantity integer not null check (quantity > 0),
-    unique (user_id, variant_id)
 );
