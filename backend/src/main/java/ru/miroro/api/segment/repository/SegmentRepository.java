@@ -1,23 +1,12 @@
 package ru.miroro.api.segment.repository;
 
-import java.util.List;
+import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
 import ru.miroro.api.segment.model.Segment;
 
-public interface SegmentRepository {
+public interface SegmentRepository extends JpaRepository<Segment, Integer> {
 
-    List<Segment> findAll();
+    Optional<Segment> findByName(String name);
 
-    Segment findById(int segmentId);
-
-    Segment findByName(String name);
-
-    void save(Segment segment);
-
-    int update(Segment segment);
-
-    int deleteById(int segmentId);
-
-    int deleteByName(String name);
-
-    Integer findIdByName(String name);
+    boolean existsByName(String name);
 }
