@@ -66,7 +66,7 @@ public class CdekCityService {
 
     private void saveCityIfNeeded(CdekCity cdekCity) {
         try {
-            City city = new City(cdekCity.getCityUuid(), cdekCity.getFullName());
+            City city = new City(cdekCity.getCityUuid(), cdekCity.getFullName(), null);
 
             cityRepository.save(city);
 
