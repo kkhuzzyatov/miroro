@@ -1,65 +1,101 @@
 package ru.miroro.api.user.service;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.miroro.api.user.dto.UserDtoRequest;
 import ru.miroro.api.user.entity.User;
 import ru.miroro.api.user.repository.UserRepository;
 
 @RequiredArgsConstructor
 @Service
+@Transactional
 public class UserService {
-
-    private static final int BCRYPT_COST = 12;
 
     private final UserRepository userRepository;
 
+    // ============================
+    // FIND BY ID
+    // ============================
+    @Transactional(readOnly = true)
+    public Optional<User> findById(Integer id) {
+        return userRepository.findById(id);
+    }
+
+    // ============================
+    // FIND BY USERNAME
+    // ============================
+    @Transactional(readOnly = true)
     public Optional<User> findByUsername(String username) {
         return userRepository.findByUsername(username);
     }
 
-    public Optional<User> findById(Long id) {
-        return userRepository.findById(id);
-    }
-
+    // ============================
+    // FIND ALL
+    // ============================
+    @Transactional(readOnly = true)
     public List<User> findAll() {
         return userRepository.findAll();
     }
 
-    public void create(UserDtoRequest dto) {
-        User user = new User();
-        user.setUsername(dto.getUsername());
-        user.setPasswordHash(dto.getPassword());
-        user.setRole("customer");
+    // ============================
+    // CREATE USER
+    // ============================
+    public User create(UserDtoRequest dto) {
 
-        userRepository.save(user);
+        User user = User.builder()
+                .username(dto.getUsername())
+                .passwordHash(hashPassword(dto.getPassword()))
+                .role("customer")
+                .build();
+
+        try {
+            return userRepository.save(user);
+        } catch (DataIntegrityViolationException e) {
+            throw new DataIntegrityViolationException("message: Этот username уже занят");
+        }
     }
 
-    public User update(Long userId, UserDtoRequest dto) {
+    // ============================
+    // UPDATE USER
+    // ============================
+    public User update(Integer userId, UserDtoRequest dto) {
 
         User user = userRepository
                 .findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("message: Пользователь не найден"));
+                .orElseThrow(() -> new IllegalArgumentException("message: Пользователь не найден"));
 
-        if (dto.getPassword() != null) {
+        if (dto.getUsername() != null && !dto.getUsername().isBlank()) {
+            user.setUsername(dto.getUsername());
+        }
+
+        if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
             user.setPasswordHash(hashPassword(dto.getPassword()));
         }
 
-        userRepository.update(user);
-        return user;
+        return userRepository.save(user);
     }
 
+    // ============================
+    // DELETE BY USERNAME
+    // ============================
     public void deleteByUsername(String username) {
-        userRepository
+
+        User user = userRepository
                 .findByUsername(username)
-                .orElseThrow(() -> new NoSuchElementException("message: Пользователь не найден"));
-        userRepository.deleteByUsername(username);
+                .orElseThrow(() -> new IllegalArgumentException("message: Пользователь не найден"));
+
+        userRepository.delete(user);
     }
 
+    // ============================
+    // PASSWORD HASH (stub)
+    // ============================
     private String hashPassword(String password) {
+        // TODO: заменить на BCryptPasswordEncoder
         return password;
     }
 }

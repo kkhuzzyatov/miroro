@@ -24,18 +24,25 @@ public class UserController {
 
     private final UserService userService;
 
+    // ============================
+    // CREATE USER
+    // ============================
     @Operation(summary = "Создание пользователя")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Пользователь создан"),
-        @ApiResponse(responseCode = "400", description = "Некорректные данные"),
         @ApiResponse(responseCode = "409", description = "Username уже занят")
     })
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public void create(@RequestBody UserDtoRequest dto) {
-        userService.create(dto);
+    public User create(@RequestBody UserDtoRequest dto) {
+        User user = userService.create(dto);
+        user.setPasswordHash(null);
+        return user;
     }
 
+    // ============================
+    // UPDATE USER
+    // ============================
     @Operation(summary = "Обновление пользователя")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Пользователь обновлён"),
@@ -44,30 +51,34 @@ public class UserController {
     })
     @PutMapping
     public User update(
-            @RequestParam("id") Long userId, @RequestBody UserDtoRequest dto, Authentication authentication) {
+            @RequestParam("id") Integer userId, @RequestBody UserDtoRequest dto, Authentication authentication) {
+
         if (authentication == null) {
             throw new SessionAuthenticationException("message: Не авторизован");
         }
 
-        User targetUser = userService
+        User target = userService
                 .findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("message: Пользователь не найден"));
 
         boolean isAdmin = authentication.getAuthorities().stream()
-                .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
-        boolean isOwner = authentication.getName().equals(targetUser.getUsername());
+        boolean isOwner = authentication.getName().equals(target.getUsername());
 
         if (!isAdmin && !isOwner) {
             throw new SecurityException("message: Недостаточно прав");
         }
 
-        User updatedUser = userService.update(userId, dto);
-        updatedUser.setPasswordHash(null);
+        User updated = userService.update(userId, dto);
+        updated.setPasswordHash(null);
 
-        return updatedUser;
+        return updated;
     }
 
+    // ============================
+    // GET CURRENT USER
+    // ============================
     @Operation(summary = "Получение текущего пользователя")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Пользователь найден"),
@@ -75,6 +86,7 @@ public class UserController {
     })
     @GetMapping("/me")
     public User me(Authentication authentication) {
+
         if (authentication == null) {
             throw new SessionAuthenticationException("message: Не авторизован");
         }
@@ -84,35 +96,39 @@ public class UserController {
                 .orElseThrow(() -> new SecurityException("message: Не авторизован"));
 
         user.setPasswordHash(null);
-
         return user;
     }
 
-    @Operation(summary = "Получение всех пользователей (admin)")
+    // ============================
+    // GET ALL USERS (ADMIN)
+    // ============================
+    @Operation(summary = "Получение всех пользователей")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Список пользователей"),
         @ApiResponse(responseCode = "403", description = "Доступ запрещён")
     })
-    @GetMapping("/all")
+    @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public List<User> findAll() {
 
         List<User> users = userService.findAll();
 
-        users.forEach(user -> user.setPasswordHash(null));
-
+        users.forEach(u -> u.setPasswordHash(null));
         return users;
     }
 
-    @Operation(summary = "Удаление пользователя по username (admin)")
+    // ============================
+    // DELETE USER BY USERNAME (ADMIN)
+    // ============================
+    @Operation(summary = "Удаление пользователя по username")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Пользователь удалён"),
         @ApiResponse(responseCode = "403", description = "Доступ запрещён"),
         @ApiResponse(responseCode = "404", description = "Пользователь не найден")
     })
     @DeleteMapping
-    @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("hasRole('ADMIN')")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteByUsername(@RequestParam("username") String username) {
         userService.deleteByUsername(username);
     }
