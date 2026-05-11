@@ -1,0 +1,214 @@
+.productsTab {
+    max-width: 900px;
+    margin: 20px auto;
+    font-family: Arial, sans-serif;
+}
+
+.productFormContainer {
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 30px;
+}
+
+.formGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.formGroup label {
+    font-weight: 700;
+}
+
+.formGroup input,
+.formGroup textarea,
+.formGroup select {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 14px;
+}
+
+.formGroup input:focus,
+.formGroup textarea:focus,
+.formGroup select:focus {
+    outline: none;
+    border-color: #4caf50;
+    box-shadow: 0 0 4px rgba(76, 175, 80, 0.3);
+}
+
+.variantsContainer,
+.imagesContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.variantRow,
+.imageRow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    background: #fff;
+}
+
+.secondaryButton,
+.saveButton,
+.cancelButton,
+.editButton,
+.deleteButton,
+.productHeader button {
+    border: none;
+    border-radius: 8px;
+    padding: 8px 14px;
+    cursor: pointer;
+    font-weight: 700;
+    transition: 0.2s;
+}
+
+.secondaryButton {
+    background: #2196f3;
+    color: #fff;
+}
+
+.secondaryButton:hover {
+    background: #1976d2;
+}
+
+.saveButton {
+    background: #4caf50;
+    color: #fff;
+}
+
+.saveButton:hover {
+    background: #43a047;
+}
+
+.cancelButton {
+    background: #f44336;
+    color: #fff;
+}
+
+.cancelButton:hover {
+    background: #d32f2f;
+}
+
+.editButton {
+    background: #ff9800;
+    color: #fff;
+}
+
+.editButton:hover {
+    background: #f57c00;
+}
+
+.deleteButton {
+    background: #f44336;
+    color: #fff;
+}
+
+.deleteButton:hover {
+    background: #d32f2f;
+}
+
+.actions {
+    display: flex;
+    gap: 10px;
+}
+
+.productsContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.productBlock {
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    background: #fff;
+    padding: 16px;
+}
+
+.productHeader {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.productName {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.productDetails {
+    margin-top: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.productImages {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.productImage,
+.preview {
+    width: 70px;
+    height: 70px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+
+.colorSquare {
+    width: 14px;
+    height: 14px;
+    border: 1px solid #000;
+    display: inline-block;
+    border-radius: 4px;
+    margin-right: 6px;
+    vertical-align: middle;
+}
+
+.imageGroup {
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    overflow: hidden;
+}
+
+.imageGroupTitle {
+    padding: 10px 14px;
+    background: #efefef;
+    font-weight: 700;
+}
+
+.mainCheckbox {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+@media (max-width: 700px) {
+    .variantRow,
+    .imageRow,
+    .actions,
+    .productHeader {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .productImage,
+    .preview {
+        width: 100%;
+        height: 200px;
+    }
+}

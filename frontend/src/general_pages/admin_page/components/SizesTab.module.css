@@ -1,0 +1,129 @@
+.sizesTab {
+  margin-top: 15px;
+  font-family: Arial, sans-serif;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ====== CONTAINER ====== */
+.container {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ====== ROWS ====== */
+.addRow,
+.item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.addRow:hover,
+.item:hover {
+  background-color: #f0f0f0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* ====== FIELDS ====== */
+.sizeId {
+  border: 1px solid #ddd;
+  padding: 6px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+  font-weight: bold;
+  background-color: #eee;
+  min-width: 50px;
+  text-align: center;
+}
+
+.sizeName {
+  border: 1px solid #ccc;
+  padding: 6px 10px;
+  border-radius: 6px;
+  width: 200px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.sizeName:focus {
+  border-color: #4caf50;
+  box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+  outline: none;
+}
+
+/* ====== BUTTONS ====== */
+.btnAdd,
+.btnUpdate,
+.btnDelete {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.2s ease;
+}
+
+.btnAdd {
+  background-color: #4caf50;
+  color: white;
+}
+
+.btnAdd:disabled {
+  background-color: #a5d6a7;
+  cursor: not-allowed;
+}
+
+.btnAdd:hover:not(:disabled) {
+  background-color: #45a049;
+}
+
+.btnUpdate {
+  background-color: #2196f3;
+  color: white;
+}
+
+.btnUpdate:hover {
+  background-color: #1976d2;
+}
+
+.btnDelete {
+  background-color: #f44336;
+  color: white;
+}
+
+.btnDelete:hover {
+  background-color: #d32f2f;
+}
+
+/* ====== SPACER ====== */
+.spacer {
+  flex: 1;
+}
+
+/* ====== RESPONSIVE ====== */
+@media (max-width: 500px) {
+  .sizeName {
+    width: 120px;
+  }
+
+  .addRow,
+  .item {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .btnAdd,
+  .btnUpdate,
+  .btnDelete {
+    font-size: 12px;
+    padding: 4px 8px;
+  }
+}

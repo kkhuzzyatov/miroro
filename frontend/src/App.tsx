@@ -19,6 +19,8 @@ import Footer from "./components/footer/Footer";
 import NavBar from "./components/navbar/NavBar";
 import AddressModal from "./components/address_modal/AddressModal";
 
+import AdminPage from "./general_pages/admin_page/AdminPage";
+
 export default function App() {
   const [addressOpen, setAddressOpen] = useState(false);
 
@@ -46,6 +48,8 @@ export default function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/cart" element={<BasketsPage />} />
           <Route path="/account" element={<AccountPage />} />
+
+          <Route path="/admin/console" element={<AdminPage />} />
         </Routes>
       </div>
 

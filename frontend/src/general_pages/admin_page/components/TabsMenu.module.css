@@ -1,0 +1,63 @@
+.tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #e0e0e0;
+    font-family: Arial, sans-serif;
+}
+
+/* ====== TAB BUTTONS ====== */
+.tabs button {
+    padding: 8px 16px;
+    cursor: pointer;
+    border: 1px solid #ccc;
+    border-bottom: none;
+    border-radius: 6px 6px 0 0;
+    background-color: #f5f5f5;
+    transition:
+        background-color 0.2s ease,
+        transform 0.1s ease;
+    font-weight: 600;
+}
+
+.tabs button:hover {
+    background-color: #e0e0e0;
+    transform: translateY(-1px);
+}
+
+.tabs button.active {
+    background-color: #4caf50;
+    color: #fff;
+    border-color: #4caf50;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* ====== TAB CONTENT ====== */
+.tab-content {
+    display: none;
+    padding: 20px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    background-color: #fff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+    transition: opacity 0.3s ease;
+}
+
+.tab-content.active {
+    display: block;
+    opacity: 1;
+}
+
+/* ====== RESPONSIVE ====== */
+@media (max-width: 600px) {
+    .tabs {
+        flex-direction: column;
+        border-bottom: none;
+    }
+
+    .tabs button {
+        width: 100%;
+        border-radius: 6px;
+    }
+}
