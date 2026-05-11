@@ -58,17 +58,11 @@ public class ColorController {
     })
     @PutMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> update(@RequestParam("id") int id, @RequestBody Color color) {
+    public ResponseEntity<Color> update(@RequestParam("id") int id, @RequestBody Color color) {
 
-        color.setId(id);
+        Color updatedColor = service.update(id, color);
 
-        int updated = repo.update(color);
-
-        if (updated == 0) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(updatedColor);
     }
 
     @Operation(summary = "Удалить цвет по id")
@@ -81,11 +75,7 @@ public class ColorController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteById(@RequestParam("id") int id) {
 
-        int deleted = repo.deleteById(id);
-
-        if (deleted == 0) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
+        service.deleteById(id);
 
         return ResponseEntity.noContent().build();
     }

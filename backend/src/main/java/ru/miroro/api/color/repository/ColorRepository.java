@@ -1,23 +1,14 @@
 package ru.miroro.api.color.repository;
 
-import java.util.List;
+import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
 import ru.miroro.api.color.model.Color;
 
-public interface ColorRepository {
+public interface ColorRepository extends JpaRepository<Color, Integer> {
 
-    List<Color> findAll();
-
-    Color findById(int id);
-
-    Color findByName(String name);
-
-    void save(Color color);
-
-    int update(Color color);
-
-    int deleteById(int id);
-
-    int deleteByName(String name);
+    Optional<Color> findByName(String name);
 
     Integer findIdByName(String name);
+
+    int deleteByName(String name);
 }
