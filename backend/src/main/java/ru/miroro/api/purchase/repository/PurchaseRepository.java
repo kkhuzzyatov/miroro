@@ -1,51 +1,34 @@
 package ru.miroro.api.purchase.repository;
 
-import java.math.BigDecimal;
 import java.util.List;
-import ru.miroro.api.purchase.model.Purchase;
-import ru.miroro.api.purchase.model.PurchaseItem;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import ru.miroro.api.purchase.entity.PurchaseEntity;
 
-public interface PurchaseRepository {
+public interface PurchaseRepository extends JpaRepository<PurchaseEntity, Integer> {
 
-    // =========================================================
-    // READ
-    // =========================================================
+    @Query("""
+        select distinct p
+        from PurchaseEntity p
+        left join fetch p.items i
+        left join fetch i.productItem pi
+        left join fetch pi.variant v
+        left join fetch v.product
+        left join fetch v.size
+        left join fetch v.color
+    """)
+    List<PurchaseEntity> findAllFull();
 
-    List<Purchase> findAll();
-
-    public List<Purchase> findByUserId(int userId);
-
-    public List<PurchaseItem> findItemsByPurchaseId(int purchaseId);
-
-    // =========================================================
-    // PURCHASE
-    // =========================================================
-
-    public int createPurchase(int userId, int statusId, int addressId);
-
-    public void addPurchaseItem(int purchaseId, int productItemId, BigDecimal price);
-
-    public void addStatusHistory(int purchaseId, int previousStatusId);
-
-    // =========================================================
-    // STATUS
-    // =========================================================
-
-    public int getStatusIdByName(String name);
-
-    public int getCurrentStatusId(int purchaseId);
-
-    public void updateStatus(int purchaseId, int newStatusId);
-
-    // =========================================================
-    // INVENTORY (ВАЖНО)
-    // =========================================================
-
-    /**
-     * Резервирует свободные product_item.
-     * FOR UPDATE SKIP LOCKED предотвращает двойную продажу.
-     */
-    public List<ProductItemWithPrice> reserveProductItems(int variantId, int quantity);
-
-    public void markItemsSold(List<Integer> ids);
+    @Query("""
+        select distinct p
+        from PurchaseEntity p
+        left join fetch p.items i
+        left join fetch i.productItem pi
+        left join fetch pi.variant v
+        left join fetch v.product
+        left join fetch v.size
+        left join fetch v.color
+        where p.userId = :userId
+    """)
+    List<PurchaseEntity> findByUserIdFull(Integer userId);
 }

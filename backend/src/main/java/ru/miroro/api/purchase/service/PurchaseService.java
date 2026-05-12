@@ -1,94 +1,131 @@
 package ru.miroro.api.purchase.service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.miroro.api.purchase.dto.CreatePurchaseRequest;
-import ru.miroro.api.purchase.dto.PurchaseVariantRequest;
-import ru.miroro.api.purchase.model.Purchase;
-import ru.miroro.api.purchase.repository.PurchaseRepository;
+import ru.miroro.api.location.entity.Address;
+import ru.miroro.api.location.repository.AddressRepository;
+import ru.miroro.api.purchase.dto.*;
+import ru.miroro.api.purchase.entity.*;
+import ru.miroro.api.purchase.repository.*;
+import ru.miroro.api.user.entity.User;
+import ru.miroro.api.user.repository.UserRepository;
 
 @RequiredArgsConstructor
 @Service
 @Transactional
 public class PurchaseService {
 
-    private final PurchaseRepository repository;
+    private final PurchaseRepository purchaseRepository;
+    private final StatusOfPurchaseRepository statusRepository;
+    private final PurchaseItemRepository itemRepository;
+    private final ItemOfProductItemRepository itemOfProductItemRepository;
+    private final PurchaseStatusHistoryRepository historyRepository;
 
-    // =========================================================
-    // READ
-    // =========================================================
+    private final UserRepository userRepository;
+    private final AddressRepository addressRepository;
 
     @Transactional(readOnly = true)
-    public List<Purchase> findAll() {
-        List<Purchase> purchases = repository.findAll();
+    public List<PurchaseResponseDto> findAll() {
 
-        for (Purchase purchase : purchases) {
-            purchase.setPurchaseItems(repository.findItemsByPurchaseId(purchase.getPurchaseId()));
-        }
-
-        return purchases;
+        return purchaseRepository.findAllFull().stream().map(this::toDto).toList();
     }
 
     @Transactional(readOnly = true)
-    public List<Purchase> findByUserId(int userId) {
-        List<Purchase> purchases = repository.findByUserId(userId);
+    public List<PurchaseResponseDto> findByUserId(int userId) {
 
-        for (Purchase purchase : purchases) {
-            purchase.setPurchaseItems(repository.findItemsByPurchaseId(purchase.getPurchaseId()));
-        }
-
-        return purchases;
+        return purchaseRepository.findByUserIdFull(userId).stream()
+                .map(this::toDto)
+                .toList();
     }
-
-    // =========================================================
-    // CREATE PURCHASE
-    // =========================================================
 
     public void create(CreatePurchaseRequest request, int userId) {
 
-        int statusId = repository.getStatusIdByName("ожидание передачи в пункт отправки");
+        PurchaseStatusEntity status = statusRepository
+                .findByName("ожидание передачи в пункт отправки")
+                .orElseThrow();
 
-        int purchaseId = repository.createPurchase(userId, statusId, request.getAddressId());
+        PurchaseEntity purchase = purchaseRepository.save(PurchaseEntity.builder()
+                .userId(userId)
+                .statusId(status.getId())
+                .addressId(request.getAddressId())
+                .build());
 
-        repository.addStatusHistory(purchaseId, statusId);
+        historyRepository.save(
+                new PurchaseStatusHistoryEntity(null, purchase.getId(), status.getId(), LocalDateTime.now()));
 
         List<Integer> reservedIds = new ArrayList<>();
 
-        // --- резервируем товары ---
         for (PurchaseVariantRequest item : request.getItems()) {
 
-            var reserved = repository.reserveProductItems(item.getVariantId(), item.getQuantity());
+            List<ProductItemEntity> reserved =
+                    itemOfProductItemRepository.findByVariant_IdAndIsSoldFalse(item.getVariantId());
 
             if (reserved.size() < item.getQuantity()) {
-                throw new IllegalStateException("message: Недостаточно товара variant_id=" + item.getVariantId());
+                throw new IllegalStateException("Недостаточно товара variant_id=" + item.getVariantId());
             }
 
-            // создаём purchase_item
-            for (var pi : reserved) {
+            reserved = reserved.subList(0, item.getQuantity());
 
-                repository.addPurchaseItem(purchaseId, pi.productItemId(), pi.price());
+            for (ProductItemEntity pi : reserved) {
 
-                reservedIds.add(pi.productItemId());
+                itemRepository.save(PurchaseItemEntity.builder()
+                        .purchase(purchase)
+                        .productItem(pi)
+                        .price(pi.getVariant().getProduct().getPrice())
+                        .build());
+
+                reservedIds.add(pi.getId());
             }
         }
 
-        // финально помечаем проданными
-        repository.markItemsSold(reservedIds);
+        itemOfProductItemRepository.markSold(reservedIds);
     }
-
-    // =========================================================
-    // STATUS
-    // =========================================================
 
     public void changeStatus(int purchaseId, String newStatus) {
 
-        int newStatusId = repository.getStatusIdByName(newStatus);
-        int oldStatusId = repository.getCurrentStatusId(purchaseId);
+        PurchaseEntity purchase = purchaseRepository.findById(purchaseId).orElseThrow();
 
-        repository.updateStatus(purchaseId, newStatusId);
-        repository.addStatusHistory(purchaseId, oldStatusId);
+        int oldStatus = purchase.getStatusId();
+
+        int newStatusId = statusRepository.findByName(newStatus).orElseThrow().getId();
+
+        purchase.setStatusId(newStatusId);
+
+        purchaseRepository.save(purchase);
+
+        historyRepository.save(new PurchaseStatusHistoryEntity(null, purchaseId, oldStatus, LocalDateTime.now()));
+    }
+
+    private PurchaseResponseDto toDto(PurchaseEntity purchase) {
+
+        User user = userRepository.findById(purchase.getUserId()).orElseThrow();
+
+        Address address = addressRepository.findById(purchase.getAddressId()).orElseThrow();
+
+        PurchaseStatusEntity status =
+                statusRepository.findById(purchase.getStatusId()).orElseThrow();
+
+        return new PurchaseResponseDto(
+                purchase.getId(),
+                user.getUsername(),
+                status.getName(),
+                address.getAddress(),
+                purchase.getItems().stream().map(this::toDto).toList());
+    }
+
+    private PurchaseItemResponseDto toDto(PurchaseItemEntity item) {
+
+        VariantEntity variant = item.getProductItem().getVariant();
+
+        return new PurchaseItemResponseDto(
+                item.getId(),
+                variant.getProduct().getName(),
+                variant.getSize().getName(),
+                variant.getColor().getName(),
+                item.getPrice());
     }
 }

@@ -41,4 +41,8 @@ public interface ProductItemRepository extends JpaRepository<ProductItem, Intege
         WHERE pi.product_item_id = :id
     """, nativeQuery = true)
     Optional<ProductItemProjection> findDetailedById(@Param("id") int id);
+
+    @Modifying
+    @Query("update ProductItem p set p.isSold = true where p.id = :id")
+    int markAsSold(@Param("id") int id);
 }

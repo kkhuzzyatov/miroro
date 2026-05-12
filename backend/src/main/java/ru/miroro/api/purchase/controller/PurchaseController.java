@@ -10,15 +10,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.miroro.api.purchase.dto.CreatePurchaseRequest;
-import ru.miroro.api.purchase.model.Purchase;
+import ru.miroro.api.purchase.dto.PurchaseResponseDto;
 import ru.miroro.api.purchase.service.PurchaseService;
 import ru.miroro.api.user.entity.User;
 import ru.miroro.api.user.repository.UserRepository;
@@ -46,7 +40,7 @@ public class PurchaseController {
         @ApiResponse(responseCode = "403", description = "Доступ запрещён")
     })
     @GetMapping
-    public ResponseEntity<List<Purchase>> getUserPurchases(Authentication authentication) {
+    public ResponseEntity<List<PurchaseResponseDto>> getUserPurchases(Authentication authentication) {
 
         Integer userId = resolveUserId(authentication);
 
@@ -60,7 +54,7 @@ public class PurchaseController {
     })
     @GetMapping("/all")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<Purchase>> getAllPurchases() {
+    public ResponseEntity<List<PurchaseResponseDto>> getAllPurchases() {
 
         return ResponseEntity.ok(service.findAll());
     }
