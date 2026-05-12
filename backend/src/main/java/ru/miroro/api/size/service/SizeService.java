@@ -38,7 +38,7 @@ public class SizeService {
 
     public Size create(Size size) {
 
-        size.setSizeId(null);
+        size.setId(null);
 
         return sizeRepository.save(size);
     }

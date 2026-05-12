@@ -23,7 +23,7 @@ public class Size {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "size_id")
-    private Integer sizeId;
+    private Integer id;
 
     @Column(name = "name", nullable = false, unique = true)
     private String name;
@@ -39,11 +39,11 @@ public class Size {
             return false;
         }
 
-        return sizeId != null && sizeId.equals(size.sizeId);
+        return id != null && id.equals(size.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(sizeId);
+        return Objects.hashCode(id);
     }
 }
