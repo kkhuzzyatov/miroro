@@ -1,4 +1,14 @@
 import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from 'react';
+
+import { fetchProducts } from "../../../api_client/products";
+import type { Product } from "../../../api_client/products";
+
+import { fetchSizes } from "../../../api_client/sizes";
+import type { Size } from "../../../api_client/sizes";
+
+import { fetchColors } from "../../../api_client/colors";
+import type { Color } from "../../../api_client/colors";
+
 import styles from './ProductsTab.module.css';
 
 type Segment = {
@@ -6,36 +16,9 @@ type Segment = {
   name: string;
 };
 
-type Size = {
-  id: number;
-  name: string;
-};
-
-type Color = {
-  id: number;
-  name: string;
-  hex: string;
-};
-
 type Variant = {
   size_id: number;
   color_id: number;
-};
-
-type ProductImage = {
-  path: string;
-  is_main: boolean;
-  color_id: number | null;
-};
-
-type Product = {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  segment_id: number;
-  variants: Variant[];
-  images: ProductImage[];
 };
 
 type ImageRow = {
@@ -85,21 +68,18 @@ export default function ProductsTab() {
   }
 
   async function loadSizes() {
-    const response = await fetch('/api/sizes');
-    const data = await response.json();
-    setSizes(data);
+    const response = await fetchSizes();
+    setSizes(response);
   }
 
   async function loadColors() {
-    const response = await fetch('/api/colors');
-    const data = await response.json();
-    setColors(data);
+    const response = await fetchColors();
+    setColors(response);
   }
 
   async function loadProducts() {
-    const response = await fetch('/api/products');
-    const data = await response.json();
-    setProducts(data);
+    const response = await fetchProducts();
+    setProducts(response);
   }
 
   function getSegmentName(id: number) {
@@ -223,7 +203,7 @@ export default function ProductsTab() {
 
       const response = await fetch(
         editedId !== null
-          ? `/api/products?id=${editedId}`
+          ? `/api/products/${editedId}`
           : '/api/products',
         {
           method: editedId !== null ? 'PUT' : 'POST',
@@ -256,7 +236,7 @@ export default function ProductsTab() {
     }
 
     const response = await fetch(
-      `/api/products?id=${id}`,
+      `/api/products/${id}`,
       {
         method: 'DELETE',
       },

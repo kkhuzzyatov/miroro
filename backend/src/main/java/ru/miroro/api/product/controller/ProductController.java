@@ -69,10 +69,10 @@ public class ProductController {
         @ApiResponse(responseCode = "404", description = "Товар не найден"),
         @ApiResponse(responseCode = "403", description = "Доступ запрещён")
     })
-    @PutMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> update(
-            @RequestParam("id") int id,
+            @PathVariable int id,
             @RequestPart("product") ProductDto productDto,
             @RequestPart(value = "images", required = false) List<MultipartFile> imageFiles)
             throws IOException {
@@ -92,9 +92,9 @@ public class ProductController {
         @ApiResponse(responseCode = "404", description = "Не найден"),
         @ApiResponse(responseCode = "403", description = "Доступ запрещён")
     })
-    @DeleteMapping
+    @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> deleteById(@RequestParam("id") int id) {
+    public ResponseEntity<Void> deleteById(@PathVariable int id) {
 
         int deleted = service.deleteById(id);
 
