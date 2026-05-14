@@ -56,9 +56,9 @@ public class ColorController {
         @ApiResponse(responseCode = "404", description = "Цвет не найден"),
         @ApiResponse(responseCode = "409", description = "Конфликт с ограничениями бд")
     })
-    @PutMapping
+    @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Color> update(@RequestParam("id") int id, @RequestBody Color color) {
+    public ResponseEntity<Color> update(@PathVariable int id, @RequestBody Color color) {
 
         Color updatedColor = service.update(id, color);
 
@@ -71,9 +71,9 @@ public class ColorController {
         @ApiResponse(responseCode = "403", description = "Доступ запрещён"),
         @ApiResponse(responseCode = "404", description = "Цвет не найден")
     })
-    @DeleteMapping
+    @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> deleteById(@RequestParam("id") int id) {
+    public ResponseEntity<Void> deleteById(@PathVariable int id) {
 
         service.deleteById(id);
 

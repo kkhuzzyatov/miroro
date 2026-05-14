@@ -1,11 +1,8 @@
 import { useEffect, useState } from 'react';
 import styles from './ColorsTab.module.css';
 
-type Color = {
-  id: number;
-  name: string;
-  hex: string;
-};
+import { fetchColors } from "../../../api_client/colors";
+import type { Color } from "../../../api_client/colors";
 
 export default function ColorsTab() {
   const [colors, setColors] = useState<Color[]>([]);
@@ -19,11 +16,7 @@ export default function ColorsTab() {
   }, []);
 
   async function loadColors() {
-    const res = await fetch('/api/colors', {
-      credentials: 'include',
-    });
-
-    const data: Color[] = await res.json();
+    const data = await fetchColors();
     setColors(data);
   }
 
@@ -37,7 +30,6 @@ export default function ColorsTab() {
 
   async function addColor() {
     const payload = {
-      id: 0,
       name: name.trim(),
       hex: normalizeHex(hex),
     };
@@ -67,7 +59,7 @@ export default function ColorsTab() {
       hex: normalizeHex(hexVal),
     };
 
-    const res = await fetch(`/api/colors?id=${id}`, {
+    const res = await fetch(`/api/colors/${id}`, {
       method: 'PUT',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
@@ -82,7 +74,7 @@ export default function ColorsTab() {
   }
 
   async function deleteColor(id: number) {
-    const res = await fetch(`/api/colors?id=${id}`, {
+    const res = await fetch(`/api/colors/${id}`, {
       method: 'DELETE',
       credentials: 'include',
     });
