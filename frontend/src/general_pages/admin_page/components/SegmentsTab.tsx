@@ -30,7 +30,7 @@ export default function SegmentTab() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({ id: 0, name: newName }),
+      body: JSON.stringify({ name: newName }),
     });
 
     setNewName('');
@@ -39,7 +39,7 @@ export default function SegmentTab() {
 
   // UPDATE
   async function updateSegment(id: number, name: string) {
-    const res = await fetch(`/api/segments?id=${id}`, {
+    const res = await fetch(`/api/segments/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -55,7 +55,7 @@ export default function SegmentTab() {
 
   // DELETE
   async function deleteSegment(id: number) {
-    const res = await fetch(`/api/segments?id=${id}`, {
+    const res = await fetch(`/api/segments/${id}`, {
       method: 'DELETE',
       credentials: 'include',
     });

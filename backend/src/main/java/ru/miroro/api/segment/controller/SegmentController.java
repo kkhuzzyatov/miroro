@@ -33,17 +33,17 @@ public class SegmentController {
     }
 
     @Operation(summary = "Обновить сегмент")
-    @PutMapping
+    @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Segment> update(@RequestParam("id") int id, @RequestBody Segment segment) {
+    public ResponseEntity<Segment> update(@PathVariable int id, @RequestBody Segment segment) {
 
         return ResponseEntity.ok(service.update(id, segment));
     }
 
     @Operation(summary = "Удалить сегмент по id")
-    @DeleteMapping
+    @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> deleteById(@RequestParam("id") int id) {
+    public ResponseEntity<Void> deleteById(@PathVariable int id) {
         service.deleteById(id);
         return ResponseEntity.noContent().build();
     }
