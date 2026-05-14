@@ -1,7 +1,6 @@
 package ru.miroro.api.product_item.service;
 
 import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,11 +19,6 @@ public class ProductItemService {
     public List<ProductItemResponse> findAll() {
 
         return repository.findAllDetailed().stream().map(this::toResponse).toList();
-    }
-
-    public Optional<ProductItemResponse> findById(int id) {
-
-        return repository.findDetailedById(id).map(this::toResponse);
     }
 
     public void create(CreateProductItemRequest request) {

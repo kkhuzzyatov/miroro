@@ -19,15 +19,8 @@ public class ProductItemController {
     private final ProductItemService service;
 
     @GetMapping
-    public ResponseEntity<?> get(@RequestParam(value = "id", required = false) Integer id) {
-
-        if (id == null) {
-            return ResponseEntity.ok(service.findAll());
-        }
-
-        return service.findById(id)
-                .<ResponseEntity<?>>map(ResponseEntity::ok)
-                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    public ResponseEntity<?> get() {
+        return ResponseEntity.ok(service.findAll());
     }
 
     @PostMapping
