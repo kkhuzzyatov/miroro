@@ -1,6 +1,6 @@
-import type { Product } from "../api/products";
-import type { Size } from "../api/sizes";
-import type { Color } from "../api/colors";
+import type { Product } from "../api_client/products";
+import type { Size } from "../api_client/sizes";
+import type { Color } from "../api_client/colors";
 
 export function getSizes(product: Product, sizes: Size[]): Size[] {
   const ids = new Set(product.variants.map(v => v.size_id));

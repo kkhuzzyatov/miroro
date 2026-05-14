@@ -2,9 +2,9 @@ import styles from './ProductCard.module.css';
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 
-import type { Product } from "../../api/products";
-import type { Size } from "../../api/sizes";
-import type { Color } from "../../api/colors";
+import type { Product } from "../../api_client/products";
+import type { Size } from "../../api_client/sizes";
+import type { Color } from "../../api_client/colors";
 
 import { truncate } from "../../utils/truncate";
 

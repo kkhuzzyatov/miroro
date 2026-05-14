@@ -1,12 +1,12 @@
 import styles from './ProductsContainer.module.css';
 import { useEffect, useMemo, useState } from "react";
 
-import { fetchProducts } from "./../../../api/products";
-import type { Product } from "./../../../api/products";
-import { fetchSizes } from "./../../../api/sizes";
-import type { Size } from "./../../../api/sizes";
-import { fetchColors } from "./../../../api/colors";
-import type { Color } from "./../../../api/colors";
+import { fetchProducts } from "../../../api_client/products";
+import type { Product } from "../../../api_client/products";
+import { fetchSizes } from "../../../api_client/sizes";
+import type { Size } from "../../../api_client/sizes";
+import { fetchColors } from "../../../api_client/colors";
+import type { Color } from "../../../api_client/colors";
 
 import { filterAvailable } from "./../../../utils/filter";
 import ProductCard from "./../../../components/product-card/ProductCard";
