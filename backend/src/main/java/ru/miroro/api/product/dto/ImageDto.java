@@ -21,5 +21,5 @@ public class ImageDto {
     private String path;
 
     @JsonProperty("is_main")
-    private boolean isMain;
+    private Boolean isMain;
 }

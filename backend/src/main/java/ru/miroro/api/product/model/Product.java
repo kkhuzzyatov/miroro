@@ -29,8 +29,10 @@ public class Product {
     private Integer segmentId;
 
     @OneToMany(mappedBy = "product", orphanRemoval = true, fetch = FetchType.LAZY)
+    @OrderBy("variantId ASC")
     private Set<Variant> variants = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
+    @OrderBy("imageId ASC")
     private Set<Image> images = new LinkedHashSet<>();
 }

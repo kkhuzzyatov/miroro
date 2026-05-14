@@ -16,38 +16,56 @@ public class ProductMapper {
     // ENTITY -> DTO
     // =====================================================
 
-    public ProductDto toDto(Product p) {
+    public ProductDto toDto(Product product) {
+
+        if (product == null) {
+            return null;
+        }
+
         return ProductDto.builder()
-                .id(p.getId())
-                .name(p.getName())
-                .description(p.getDescription())
-                .price(p.getPrice())
-                .segmentId(p.getSegmentId())
+                .id(product.getId())
+                .name(product.getName())
+                .description(product.getDescription())
+                .price(product.getPrice())
+                .segmentId(product.getSegmentId())
                 .variants(
-                        p.getVariants() == null
+                        product.getVariants() == null
                                 ? List.of()
-                                : p.getVariants().stream().map(this::toDto).toList())
+                                : product.getVariants().stream()
+                                        .map(this::toDto)
+                                        .toList())
                 .images(
-                        p.getImages() == null
+                        product.getImages() == null
                                 ? List.of()
-                                : p.getImages().stream().map(this::toDto).toList())
+                                : product.getImages().stream().map(this::toDto).toList())
                 .build();
     }
 
-    private VariantDto toDto(Variant v) {
+    private VariantDto toDto(Variant variant) {
+
+        if (variant == null) {
+            return null;
+        }
+
         return VariantDto.builder()
-                .variantId(v.getVariantId())
-                .sizeId(v.getSizeId())
-                .colorId(v.getColorId())
-                .quantity(v.getQuantity())
+                .variantId(variant.getVariantId())
+                .sizeId(variant.getSizeId())
+                .colorId(variant.getColorId())
+                .quantity(variant.getQuantity())
                 .build();
     }
 
-    private ImageDto toDto(Image i) {
+    private ImageDto toDto(Image image) {
+
+        if (image == null) {
+            return null;
+        }
+
         return ImageDto.builder()
-                .colorId(i.getColorId())
-                .path(i.getPath())
-                .isMain(i.getIsMain())
+                .imageId(image.getImageId())
+                .colorId(image.getColorId())
+                .path(image.getPath())
+                .isMain(image.getIsMain())
                 .build();
     }
 
@@ -56,15 +74,19 @@ public class ProductMapper {
     // =====================================================
 
     public Product toEntity(ProductDto dto) {
-        if (dto == null) return null;
 
-        Product p = new Product();
-        p.setId(dto.getId());
-        p.setName(dto.getName());
-        p.setDescription(dto.getDescription());
-        p.setPrice(dto.getPrice());
-        p.setSegmentId(dto.getSegmentId());
+        if (dto == null) {
+            return null;
+        }
 
-        return p;
+        Product product = new Product();
+
+        product.setId(dto.getId());
+        product.setName(dto.getName());
+        product.setDescription(dto.getDescription());
+        product.setPrice(dto.getPrice());
+        product.setSegmentId(dto.getSegmentId());
+
+        return product;
     }
 }
