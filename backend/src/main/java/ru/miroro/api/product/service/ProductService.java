@@ -18,7 +18,6 @@ import ru.miroro.api.product.model.Product;
 import ru.miroro.api.product.model.Variant;
 import ru.miroro.api.product.repository.ImageRepository;
 import ru.miroro.api.product.repository.ProductRepository;
-import ru.miroro.api.product.repository.ProductRepositoryCustom;
 import ru.miroro.api.product.repository.VariantRepository;
 
 @RequiredArgsConstructor
@@ -27,7 +26,6 @@ import ru.miroro.api.product.repository.VariantRepository;
 public class ProductService {
 
     private final ProductRepository productRepository;
-    private final ProductRepositoryCustom productRepositoryCustom;
     private final VariantRepository variantRepository;
     private final ImageRepository imageRepository;
     private final ProductMapper productMapper;
@@ -41,15 +39,15 @@ public class ProductService {
 
     @Transactional(readOnly = true)
     public List<ProductDto> findAll() {
-        return productRepositoryCustom.findAllWithDetails().stream()
+        return productRepository.findAllByOrderByIdAsc().stream()
                 .map(productMapper::toDto)
                 .toList();
     }
 
     @Transactional(readOnly = true)
     public ProductDto findById(int id) {
-        Product product = productRepositoryCustom.findByIdWithDetails(id);
-        return product == null ? null : productMapper.toDto(product);
+
+        return productRepository.findById(id).map(productMapper::toDto).orElse(null);
     }
 
     // =====================================================
@@ -80,7 +78,10 @@ public class ProductService {
 
         saveImages(saved, imageFiles);
 
-        return productMapper.toDto(productRepositoryCustom.findByIdWithDetails(saved.getId()));
+        return productRepository
+                .findById(saved.getId())
+                .map(productMapper::toDto)
+                .orElse(null);
     }
 
     // =====================================================
@@ -89,11 +90,13 @@ public class ProductService {
 
     public int update(int id, ProductDto dto, List<MultipartFile> imageFiles) throws IOException {
 
-        Product existing = productRepositoryCustom.findByIdWithDetails(id);
+        Optional<Product> optionalProduct = productRepository.findById(id);
 
-        if (existing == null) {
+        if (optionalProduct.isEmpty()) {
             return 0;
         }
+
+        Product existing = optionalProduct.get();
 
         existing.setName(dto.getName());
         existing.setDescription(dto.getDescription());
@@ -106,6 +109,7 @@ public class ProductService {
         List<Variant> oldVariants = variantRepository.findByProductId(id);
 
         Set<String> oldKeys = new HashSet<>();
+
         for (Variant v : oldVariants) {
             oldKeys.add(key(v.getSizeId(), v.getColorId()));
         }
@@ -121,17 +125,20 @@ public class ProductService {
             }
         }
 
-        // delete missing
+        // DELETE MISSING
         for (Variant v : oldVariants) {
             String k = key(v.getSizeId(), v.getColorId());
+
             if (!newKeys.contains(k)) {
                 variantRepository.delete(v);
             }
         }
 
-        // add new
+        // ADD NEW
         for (String k : newKeys) {
+
             if (!oldKeys.contains(k)) {
+
                 VariantDto v = newMap.get(k);
 
                 Variant variant = new Variant();
@@ -151,6 +158,7 @@ public class ProductService {
             imageRepository.deleteByProductId(id);
 
             Path productDir = Paths.get(imageDir, "product_" + id);
+
             deleteDirectory(productDir);
 
             saveImages(existing, imageFiles);
@@ -191,7 +199,9 @@ public class ProductService {
 
         for (MultipartFile file : imageFiles) {
 
-            if (file == null || file.isEmpty()) continue;
+            if (file == null || file.isEmpty()) {
+                continue;
+            }
 
             String safe = sanitizeFileName(file.getOriginalFilename());
 
@@ -215,6 +225,7 @@ public class ProductService {
     }
 
     private void deleteDirectory(Path dir) throws IOException {
+
         if (Files.exists(dir)) {
             Files.walk(dir).sorted(Comparator.reverseOrder()).forEach(p -> p.toFile()
                     .delete());
@@ -222,7 +233,11 @@ public class ProductService {
     }
 
     private String sanitizeFileName(String fileName) {
-        if (fileName == null) return "";
+
+        if (fileName == null) {
+            return "";
+        }
+
         return fileName.replaceAll("[^a-zA-Z0-9а-яА-ЯёЁ\\-_.]", "_")
                 .replaceAll("_{2,}", "_")
                 .trim();
