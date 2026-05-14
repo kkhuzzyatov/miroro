@@ -30,7 +30,7 @@ export default function ColorSelector({
             selectedColor === id ? styles.selected : ""
           }`}
           style={{
-            background: `#${colors.find(c => c.id === id)?.hex ?? "000000"}`,
+            background: `${colors.find(c => c.id === id)?.hex ?? "000000"}`,
           }}
           onClick={() => onSelect(id)}
         />

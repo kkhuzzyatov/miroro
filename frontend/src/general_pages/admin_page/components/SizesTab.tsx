@@ -1,10 +1,8 @@
 import { useEffect, useState } from 'react';
 import styles from './SizesTab.module.css';
 
-type Size = {
-  id: number;
-  name: string;
-};
+import { fetchSizes } from "../../../api_client/sizes";
+import type { Size } from "../../../api_client/sizes";
 
 export default function SizesTab() {
   const [sizes, setSizes] = useState<Size[]>([]);
@@ -15,11 +13,7 @@ export default function SizesTab() {
   }, []);
 
   async function loadSizes() {
-    const res = await fetch('/api/sizes', {
-      credentials: 'include',
-    });
-
-    const data: Size[] = await res.json();
+    const data = await fetchSizes();
     setSizes(data);
   }
 
@@ -44,7 +38,7 @@ export default function SizesTab() {
   }
 
   async function updateSize(id: number, name: string) {
-    const res = await fetch(`/api/sizes?id=${id}`, {
+    const res = await fetch(`/api/sizes/${id}`, {
       method: 'PUT',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
@@ -59,7 +53,7 @@ export default function SizesTab() {
   }
 
   async function deleteSize(id: number) {
-    const res = await fetch(`/api/sizes?id=${id}`, {
+    const res = await fetch(`/api/sizes/${id}`, {
       method: 'DELETE',
       credentials: 'include',
     });

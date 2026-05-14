@@ -20,7 +20,7 @@ export default function AdminPage() {
 
   async function loadUser() {
     try {
-      const res = await fetch('/api/users', {
+      const res = await fetch('/api/users/me', {
         credentials: 'include',
       });
 

@@ -1,20 +1,25 @@
 import styles from './BasketPage.module.css';
 import { useEffect, useState, useMemo } from "react";
+
+import { fetchProducts } from "../../api_client/products";
+import type { Product } from "../../api_client/products";
+
+import { fetchSizes } from "../../api_client/sizes";
+import type { Size } from "../../api_client/sizes";
+
+import { fetchColors } from "../../api_client/colors";
+import type { Color } from "../../api_client/colors";
+
 import BasketItem from "./components/BasketItem";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import AddressModal from "../../components/address_modal/AddressModal";
-import type { Product } from "../../api/products";
-import type { Size } from "../../api/sizes";
-import type { Color } from "../../api/colors";
 
 type CartItem = {
   productId: number;
   variantId: number;
   quantity: number;
 };
-
-type Product = any;
 
 function getCart(): CartItem[] {
   const raw = document.cookie
@@ -35,17 +40,17 @@ function getCart(): CartItem[] {
   }
 }
 
-function setCart(cart: CartItem[]) {
+function setCartCookie(cart: CartItem[]) {
   document.cookie =
     `cart=${encodeURIComponent(JSON.stringify(cart))}; path=/; max-age=31536000`;
 }
 
-function getStockMap(products: any[]) {
+function getStockMap(products: Product[]) {
   const map: Record<number, number> = {};
 
   for (const p of products) {
-    for (const v of p.variants || []) {
-      map[Number(v.variant_id)] = Number(v.quantity ?? 0);
+    for (const v of p.variants) {
+      map[v.id] = v.quantity;
     }
   }
 
@@ -62,22 +67,21 @@ function getCookie(name: string): string | null {
 export default function BasketPage() {
   const [cart, setCartState] = useState<CartItem[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
-  const [sizes, setSizes] = useState<any[]>([]);
-  const [colors, setColors] = useState<any[]>([]);
+  const [sizes, setSizes] = useState<Size[]>([]);
+  const [colors, setColors] = useState<Color[]>([]);
   const [stockMap, setStockMap] = useState<Record<number, number>>({});
-
-  const totalPrice = useMemo(() => {
-    return cart.reduce((sum, item) => {
-      const product = products.find(p => Number(p.id) === item.productId);
-      const price = Number(product?.price ?? 0);
-      return sum + price * item.quantity;
-    }, 0);
-  }, [cart, products]);
 
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
 
   const navigate = useNavigate();
   const isAuth = useAuth();
+
+  const totalPrice = useMemo(() => {
+    return cart.reduce((sum, item) => {
+      const product = products.find(p => p.id === item.productId);
+      return sum + (product?.price ?? 0) * item.quantity;
+    }, 0);
+  }, [cart, products]);
 
   useEffect(() => {
     load();
@@ -85,26 +89,25 @@ export default function BasketPage() {
 
   async function load() {
     const [p, c, s] = await Promise.all([
-      fetch("/api/products").then(r => r.json()),
-      fetch("/api/colors").then(r => r.json()),
-      fetch("/api/sizes").then(r => r.json())
+      fetchProducts(),
+      fetchColors(),
+      fetchSizes()
     ]);
 
-    const normalized = Array.isArray(p) ? p : [p];
-
-    setProducts(normalized);
+    setProducts(p);
     setColors(c);
     setSizes(s);
-    setStockMap(getStockMap(normalized));
+
+    setStockMap(getStockMap(p));
 
     const loadedCart = getCart();
     setCartState(loadedCart);
-    setCart(loadedCart);
+    setCartCookie(loadedCart);
   }
 
   function updateCart(newCart: CartItem[]) {
     setCartState(newCart);
-    setCart(newCart);
+    setCartCookie(newCart);
   }
 
   function resolveStock(variantId: number) {
@@ -115,9 +118,7 @@ export default function BasketPage() {
     const updated = [...cart];
 
     const idx = updated.findIndex(
-      i =>
-        i.productId === item.productId &&
-        i.variantId === item.variantId
+      i => i.productId === item.productId && i.variantId === item.variantId
     );
 
     if (idx === -1) return;
@@ -134,9 +135,7 @@ export default function BasketPage() {
   function removeItem(item: CartItem) {
     updateCart(
       cart.filter(
-        i =>
-          !(i.productId === item.productId &&
-            i.variantId === item.variantId)
+        i => !(i.productId === item.productId && i.variantId === item.variantId)
       )
     );
   }
@@ -161,7 +160,7 @@ export default function BasketPage() {
       return;
     }
 
-    const items: { variantId: number; quantity: number }[] = [];
+    const items = [];
 
     for (const item of cart) {
       const stock = resolveStock(item.variantId);
@@ -180,9 +179,7 @@ export default function BasketPage() {
     try {
       const res = await fetch("/api/purchases", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
           addressId: Number(addressId),
@@ -191,8 +188,6 @@ export default function BasketPage() {
       });
 
       if (!res.ok) {
-        const text = await res.text();
-        console.error("ORDER ERROR:", text);
         alert("Ошибка оформления заказа");
         return;
       }
@@ -227,7 +222,8 @@ export default function BasketPage() {
           </div>
         ))
       )}
-      <div style={{ height: "300px" }} /> {/* отступ для фиксированного NavBar */}
+
+      <div style={{ height: "300px" }} />
 
       {cart.length > 0 && (
         <div className={styles.total}>
@@ -251,6 +247,7 @@ export default function BasketPage() {
       <AddressModal
         isOpen={isAddressModalOpen}
         onClose={() => setIsAddressModalOpen(false)}
+        onConfirm={() => {}}
       />
     </div>
   );

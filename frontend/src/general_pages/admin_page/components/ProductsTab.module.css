@@ -197,6 +197,31 @@
     gap: 6px;
 }
 
+.groupContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.groupItems {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  padding-left: 20px;
+}
+
+.groupItem {
+  padding: 10px 14px;
+
+  border: 1px solid #e5e5e5;
+  border-radius: 10px;
+
+  background: #fafafa;
+
+  font-size: 14px;
+}
+
 @media (max-width: 700px) {
     .variantRow,
     .imageRow,

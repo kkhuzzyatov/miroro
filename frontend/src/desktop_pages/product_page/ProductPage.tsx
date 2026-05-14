@@ -2,33 +2,20 @@ import styles from './ProductPage.module.css';
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 
+import { fetchProductById } from "../../api_client/products";
+import type { Product } from "../../api_client/products";
+
+import { fetchSizes } from "../../api_client/sizes";
+import type { Size } from "../../api_client/sizes";
+
+import { fetchColors } from "../../api_client/colors";
+import type { Color } from "../../api_client/colors";
+
 import { ProductImageGallery } from "./components/ProductImageGallery";
 import { ProductInfo } from "./components/ProductInfo";
 import SizeSelector from "./components/SizeSelector";
 import ColorSelector from "./components/ColorSelector";
 import TopBar from "./components/TopBar";
-
-export interface ProductVariant {
-  variant_id: number;
-  size_id: number;
-  color_id: number;
-  quantity: number;
-}
-
-export interface ProductImage {
-  path: string;
-  is_main: boolean;
-  color_id: number;
-}
-
-export interface Product {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  variants: ProductVariant[];
-  images: ProductImage[];
-}
 
 type CartItem = {
   productId: number;
@@ -82,8 +69,8 @@ export default function ProductPage() {
   const variantIdParam = searchParams.get("variant_id");
 
   const [product, setProduct] = useState<Product | null>(null);
-  const [sizes, setSizes] = useState<any[]>([]);
-  const [colors, setColors] = useState<any[]>([]);
+  const [sizes, setSizes] = useState<Size[]>([]);
+  const [colors, setColors] = useState<Color[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [selectedSize, setSelectedSize] = useState<number | null>(null);
@@ -95,75 +82,92 @@ export default function ProductPage() {
     if (!id) return;
 
     (async () => {
-      setLoading(true);
+      try {
+        setLoading(true);
 
-      const [productRes, sizesRes, colorsRes] = await Promise.all([
-        fetch(`/api/products?id=${id}`).then(r => r.json()),
-        fetch("/api/sizes").then(r => r.json()),
-        fetch("/api/colors").then(r => r.json()),
-      ]);
+        const [productRes, sizesRes, colorsRes] = await Promise.all([
+          fetchProductById(Number(id)),
+          fetchSizes(),
+          fetchColors(),
+        ]);
 
-      const product: Product = Array.isArray(productRes)
-        ? productRes[0]
-        : productRes;
+        const loadedProduct: Product = Array.isArray(productRes)
+          ? productRes[0]
+          : productRes;
 
-      setProduct(product);
-      setSizes(sizesRes);
-      setColors(colorsRes);
-      setCart(getCartFromCookie());
+        setProduct(loadedProduct);
+        setSizes(sizesRes);
+        setColors(colorsRes);
+        setCart(getCartFromCookie());
 
-      let initialSize: number | null = null;
-      let initialColor: number | null = null;
+        let initialSize: number | null = null;
+        let initialColor: number | null = null;
 
-      if (variantIdParam && product.variants.length) {
-        const variant = product.variants.find(
-          v => v.variant_id === Number(variantIdParam)
-        );
+        if (variantIdParam && loadedProduct.variants.length) {
+          const variant = loadedProduct.variants.find(
+            v => v.variant_id === Number(variantIdParam)
+          );
 
-        if (variant && variant.quantity > 0) {
-          initialSize = variant.size_id;
-          initialColor = variant.color_id;
+          if (variant && variant.quantity > 0) {
+            initialSize = variant.size_id;
+            initialColor = variant.color_id;
+          }
         }
-      }
 
-      if (initialSize === null) {
-        const availableSize =
-          [...new Set(product.variants.map(v => v.size_id))]
-            .find(sizeId =>
-              product.variants.some(
-                v => v.size_id === sizeId && v.quantity > 0
+        if (initialSize === null) {
+          const availableSize =
+            [...new Set(loadedProduct.variants.map(v => v.size_id))]
+              .find(sizeId =>
+                loadedProduct.variants.some(
+                  v => v.size_id === sizeId &&
+                  v.quantity > 0
+                )
+              ) ?? null;
+
+          initialSize = availableSize;
+
+          initialColor =
+            loadedProduct.variants
+              .filter(
+                v =>
+                  v.size_id === availableSize &&
+                  v.quantity > 0
               )
-            ) ?? null;
+              .map(v => v.color_id)[0] ?? null;
+        }
 
-        initialSize = availableSize;
-
-        initialColor =
-          product.variants
-            .filter(v => v.size_id === availableSize && v.quantity > 0)
-            .map(v => v.color_id)[0] ?? null;
+        setSelectedSize(initialSize);
+        setSelectedColor(initialColor);
+      } finally {
+        setLoading(false);
       }
-
-      setSelectedSize(initialSize);
-      setSelectedColor(initialColor);
-
-      setLoading(false);
     })();
   }, [id, variantIdParam]);
 
   const filteredImages = useMemo(() => {
     if (!product) return [];
 
-    if (selectedColor === null) return product.images;
+    if (selectedColor === null) {
+      return product.images;
+    }
 
     const imagesByColor = product.images.filter(
       img => img.color_id === selectedColor
     );
 
-    return imagesByColor.length > 0 ? imagesByColor : product.images;
+    return imagesByColor.length > 0
+      ? imagesByColor
+      : product.images;
   }, [product, selectedColor]);
 
   const selectedVariant = useMemo(() => {
-    if (!product || selectedSize === null || selectedColor === null) return null;
+    if (
+      !product ||
+      selectedSize === null ||
+      selectedColor === null
+    ) {
+      return null;
+    }
 
     return product.variants.find(
       v =>
@@ -176,9 +180,15 @@ export default function ProductPage() {
   const currentVariantId = selectedVariant?.variant_id ?? null;
 
   const cartItem = useMemo(() => {
-    if (!product || currentVariantId === null) return null;
+    if (!product || currentVariantId === null) {
+      return null;
+    }
 
-    return findItem(cart, product.id, currentVariantId);
+    return findItem(
+      cart,
+      product.id,
+      currentVariantId
+    );
   }, [cart, product, currentVariantId]);
 
   const qty = cartItem?.quantity ?? 0;
@@ -194,10 +204,16 @@ export default function ProductPage() {
     if (qty >= stock) return;
 
     const newCart = [...cart];
-    const item = findItem(newCart, product.id, currentVariantId);
 
-    if (item) item.quantity += 1;
-    else {
+    const item = findItem(
+      newCart,
+      product.id,
+      currentVariantId
+    );
+
+    if (item) {
+      item.quantity += 1;
+    } else {
       newCart.push({
         productId: product.id,
         variantId: currentVariantId,
@@ -212,7 +228,12 @@ export default function ProductPage() {
     if (!product || currentVariantId === null) return;
 
     const newCart = [...cart];
-    const item = findItem(newCart, product.id, currentVariantId);
+
+    const item = findItem(
+      newCart,
+      product.id,
+      currentVariantId
+    );
 
     if (!item) return;
 
@@ -231,7 +252,6 @@ export default function ProductPage() {
 
     setSelectedSize(sizeId);
 
-    // 1. проверяем: существует ли текущий цвет для нового размера
     const hasCurrentColorVariant =
       selectedColor !== null &&
       product.variants.some(
@@ -242,21 +262,28 @@ export default function ProductPage() {
       );
 
     if (hasCurrentColorVariant) {
-      // цвет сохраняется
       return;
     }
 
-    // 2. иначе выбираем первый доступный цвет для этого размера
     const fallbackColor =
       product.variants
-        .filter(v => v.size_id === sizeId && v.quantity > 0)
+        .filter(
+          v =>
+            v.size_id === sizeId &&
+            v.quantity > 0
+        )
         .map(v => v.color_id)[0] ?? null;
 
     setSelectedColor(fallbackColor);
   };
 
-  if (loading) return <div>Loading...</div>;
-  if (!product) return <div>Product not found</div>;
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!product) {
+    return <div>Product not found</div>;
+  }
 
   return (
     <div className={styles.page}>
@@ -312,20 +339,36 @@ export default function ProductPage() {
               onClick={() => {
                 if (currentVariantId === null) return;
 
-                if (inCart) navigate("/cart");
-                else handleAdd();
+                if (inCart) {
+                  navigate("/cart");
+                } else {
+                  handleAdd();
+                }
               }}
             >
-              <span>{inCart ? "В корзине" : "В корзину"}</span>
+              <span>
+                {inCart ? "В корзине" : "В корзину"}
+              </span>
 
               {inCart && (
                 <div
                   className={styles.cartCounter}
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <button disabled={qty <= 1} onClick={handleMinus}>-</button>
+                  <button
+                    disabled={qty <= 1}
+                    onClick={handleMinus}
+                  >
+                    -
+                  </button>
+
                   <span>{qty}</span>
-                  {qty < stock && <button onClick={handleAdd}>+</button>}
+
+                  {qty < stock && (
+                    <button onClick={handleAdd}>
+                      +
+                    </button>
+                  )}
                 </div>
               )}
             </div>

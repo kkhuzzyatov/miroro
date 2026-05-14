@@ -14,7 +14,7 @@ function findVariant(products: any[], productId: number, variantId: number) {
   const product = products.find(p => p.id === productId);
   if (!product) return null;
 
-  return product.variants.find((v: any) => v.variant_id === variantId) ?? null;
+  return product.variants.find((v: any) => v.id === variantId) ?? null;
 }
 
 function getBasketImage(product: any, color_id?: number) {
