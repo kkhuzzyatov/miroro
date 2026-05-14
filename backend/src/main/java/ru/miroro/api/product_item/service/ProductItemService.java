@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.miroro.api.product_item.dto.CreateProductItemRequest;
+import ru.miroro.api.product_item.dto.ProductItemResponse;
 import ru.miroro.api.product_item.model.ProductItem;
 import ru.miroro.api.product_item.repository.ProductItemProjection;
 import ru.miroro.api.product_item.repository.ProductItemRepository;
@@ -16,15 +17,18 @@ public class ProductItemService {
 
     private final ProductItemRepository repository;
 
-    public List<ProductItemProjection> findAll() {
-        return repository.findAllDetailed();
+    public List<ProductItemResponse> findAll() {
+
+        return repository.findAllDetailed().stream().map(this::toResponse).toList();
     }
 
-    public Optional<ProductItemProjection> findById(int id) {
-        return repository.findDetailedById(id);
+    public Optional<ProductItemResponse> findById(int id) {
+
+        return repository.findDetailedById(id).map(this::toResponse);
     }
 
     public void create(CreateProductItemRequest request) {
+
         ProductItem item = ProductItem.builder()
                 .variantId(request.getVariantId())
                 .isSold(false)
@@ -36,5 +40,17 @@ public class ProductItemService {
     @Transactional
     public void markAsSold(int id) {
         repository.markAsSold(id);
+    }
+
+    private ProductItemResponse toResponse(ProductItemProjection projection) {
+
+        return ProductItemResponse.builder()
+                .productItemId(projection.getProductItemId())
+                .productName(projection.getProductName())
+                .sizeName(projection.getSizeName())
+                .colorName(projection.getColorName())
+                .colorHex(projection.getColorHex())
+                .isSold(projection.getIsSold())
+                .build();
     }
 }
