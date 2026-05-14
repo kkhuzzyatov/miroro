@@ -21,7 +21,7 @@ export interface ApiProduct {
   images: ApiImage[];
 }
 
-/* UI модели */
+/* -------------------- UI MODELS -------------------- */
 
 export interface ProductVariant {
   id: number;
@@ -45,7 +45,25 @@ export interface Product {
   variants: ProductVariant[];
 }
 
-/* mapper API → UI */
+/* -------------------- CACHE -------------------- */
+
+const PRODUCTS_TTL_MS = 5 * 60 * 1000;
+
+let productsCache: Product[] | null = null;
+let productsCacheTime = 0;
+let productsPromise: Promise<Product[]> | null = null;
+
+function isFresh(time: number) {
+  return Date.now() - time < PRODUCTS_TTL_MS;
+}
+
+/* -------------------- LOGGING -------------------- */
+
+function log(action: string, detail: unknown) {
+  console.log(`[products] ${action}`, detail);
+}
+
+/* -------------------- MAPPER -------------------- */
 
 function mapProduct(api: ApiProduct): Product {
   return {
@@ -57,40 +75,65 @@ function mapProduct(api: ApiProduct): Product {
     images: api.images.map(img => ({
       path: img.path,
       color_id: img.color_id,
-      isMain: img.is_main
+      isMain: img.is_main,
     })),
 
     variants: api.variants.map(v => ({
       id: v.variant_id,
       size_id: v.size_id,
       color_id: v.color_id,
-      quantity: v.quantity
-    }))
+      quantity: v.quantity,
+    })),
   };
 }
 
-export async function fetchProducts(): Promise<Product[]> {
-  const res = await fetch("/api/products");
+/* -------------------- API -------------------- */
 
-  if (!res.ok) {
-    throw new Error("Failed to fetch products");
+export async function fetchProducts(): Promise<Product[]> {
+  if (productsCache && isFresh(productsCacheTime)) {
+    return productsCache;
   }
 
-  const data: ApiProduct[] = await res.json();
+  if (productsPromise) {
+    return productsPromise;
+  }
 
-  return data.map(mapProduct);
+  productsPromise = (async () => {
+    try {
+      const res = await fetch("/api/products");
+
+      if (!res.ok) {
+        log("FETCH FAIL fetchProducts", res.status);
+        throw new Error("Failed to fetch products");
+      }
+
+      const data: ApiProduct[] = await res.json();
+
+      const mapped = data.map(mapProduct);
+
+      productsCache = mapped;
+      productsCacheTime = Date.now();
+
+      log("FETCH OK fetchProducts", { size: mapped.length });
+
+      return mapped;
+    } catch (e) {
+      log("FETCH ERROR fetchProducts", e);
+      throw e;
+    } finally {
+      productsPromise = null;
+    }
+  })();
+
+  return productsPromise;
 }
 
+/* -------------------- BY ID (NO HTTP) -------------------- */
+
 export async function fetchProductById(id: number): Promise<Product | null> {
-  const res = await fetch(`/api/products?id=${id}`);
+  const products = await fetchProducts();
 
-  if (res.status === 404) return null;
+  const product = products.find(p => p.id === id) ?? null;
 
-  if (!res.ok) {
-    throw new Error("Failed to fetch product");
-  }
-
-  const data: ApiProduct = await res.json();
-
-  return mapProduct(data);
+  return product;
 }
