@@ -6,13 +6,10 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.miroro.api.location.entity.Address;
-import ru.miroro.api.location.repository.AddressRepository;
 import ru.miroro.api.purchase.dto.*;
 import ru.miroro.api.purchase.entity.*;
+import ru.miroro.api.purchase.mapper.PurchaseMapper;
 import ru.miroro.api.purchase.repository.*;
-import ru.miroro.api.user.entity.User;
-import ru.miroro.api.user.repository.UserRepository;
 
 @RequiredArgsConstructor
 @Service
@@ -24,21 +21,21 @@ public class PurchaseService {
     private final PurchaseItemRepository itemRepository;
     private final ItemOfProductItemRepository itemOfProductItemRepository;
     private final PurchaseStatusHistoryRepository historyRepository;
-
-    private final UserRepository userRepository;
-    private final AddressRepository addressRepository;
+    private final PurchaseMapper purchaseMapper;
 
     @Transactional(readOnly = true)
     public List<PurchaseResponseDto> findAll() {
 
-        return purchaseRepository.findAllFull().stream().map(this::toDto).toList();
+        return purchaseRepository.findAllFull().stream()
+                .map(purchaseMapper::toDto)
+                .toList();
     }
 
     @Transactional(readOnly = true)
     public List<PurchaseResponseDto> findByUserId(int userId) {
 
         return purchaseRepository.findByUserIdFull(userId).stream()
-                .map(this::toDto)
+                .map(purchaseMapper::toDto)
                 .toList();
     }
 
@@ -98,34 +95,5 @@ public class PurchaseService {
         purchaseRepository.save(purchase);
 
         historyRepository.save(new PurchaseStatusHistoryEntity(null, purchaseId, oldStatus, LocalDateTime.now()));
-    }
-
-    private PurchaseResponseDto toDto(PurchaseEntity purchase) {
-
-        User user = userRepository.findById(purchase.getUserId()).orElseThrow();
-
-        Address address = addressRepository.findById(purchase.getAddressId()).orElseThrow();
-
-        PurchaseStatusEntity status =
-                statusRepository.findById(purchase.getStatusId()).orElseThrow();
-
-        return new PurchaseResponseDto(
-                purchase.getId(),
-                user.getUsername(),
-                status.getName(),
-                address.getAddress(),
-                purchase.getItems().stream().map(this::toDto).toList());
-    }
-
-    private PurchaseItemResponseDto toDto(PurchaseItemEntity item) {
-
-        VariantEntity variant = item.getProductItem().getVariant();
-
-        return new PurchaseItemResponseDto(
-                item.getId(),
-                variant.getProduct().getName(),
-                variant.getSize().getName(),
-                variant.getColor().getName(),
-                item.getPrice());
     }
 }
