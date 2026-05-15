@@ -1,0 +1,73 @@
+@host = http://localhost:8080
+
+#######################################################################
+# COLORS
+#######################################################################
+
+### Get all colors
+GET {{host}}/api/colors
+Accept: application/json
+
+> {%
+    client.test("Colors status is 200", function () {
+        client.assert(response.status === 200);
+    });
+
+    client.test("Colors response is array", function () {
+        client.assert(Array.isArray(response.body));
+    });
+%}
+
+#######################################################################
+# SEGMENTS
+#######################################################################
+
+### Get all segments
+GET {{host}}/api/segments
+Accept: application/json
+
+> {%
+    client.test("Segments status is 200", function () {
+        client.assert(response.status === 200);
+    });
+
+    client.test("Segments response is array", function () {
+        client.assert(Array.isArray(response.body));
+    });
+%}
+
+#######################################################################
+# SIZES
+#######################################################################
+
+### Get all sizes
+GET {{host}}/api/sizes
+Accept: application/json
+
+> {%
+    client.test("Sizes status is 200", function () {
+        client.assert(response.status === 200);
+    });
+
+    client.test("Sizes response is array", function () {
+        client.assert(Array.isArray(response.body));
+    });
+%}
+
+#######################################################################
+# PRODUCTS
+#######################################################################
+
+### Get all products
+GET {{host}}/api/products
+Accept: application/json
+
+> {%
+    client.test("Products status is 200", function () {
+        client.assert(response.status === 200);
+    });
+
+    client.test("Products response is array", function () {
+        client.assert(Array.isArray(response.body));
+    });
+%}

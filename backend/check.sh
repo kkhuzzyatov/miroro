@@ -1,11 +1,17 @@
 #!/bin/bash
-# check.sh - Запуск линтеров
+# check.sh - Запуск проверок проекта
 
 set -e
 
-TOTAL_STEPS=1
+TOTAL_STEPS=2
 
 echo "1/${TOTAL_STEPS} Применение форматирования кода (Spotless)"
 mvn spotless:apply
 
-echo "Все литеры успешно завершены!"
+echo
+echo "2/${TOTAL_STEPS} Запуск API тестов"
+
+./run-api-tests.sh
+
+echo
+echo "Все проверки успешно завершены!"
