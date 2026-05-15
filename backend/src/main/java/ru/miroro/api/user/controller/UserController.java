@@ -49,9 +49,8 @@ public class UserController {
         @ApiResponse(responseCode = "403", description = "Недостаточно прав"),
         @ApiResponse(responseCode = "404", description = "Пользователь не найден")
     })
-    @PutMapping
-    public User update(
-            @RequestParam("id") Integer userId, @RequestBody UserDtoRequest dto, Authentication authentication) {
+    @PutMapping("/{id}")
+    public User update(@PathVariable Integer userId, @RequestBody UserDtoRequest dto, Authentication authentication) {
 
         if (authentication == null) {
             throw new SessionAuthenticationException("message: Не авторизован");
