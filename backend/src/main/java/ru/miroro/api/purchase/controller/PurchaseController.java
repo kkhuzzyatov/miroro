@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import ru.miroro.api.purchase.dto.ChangePurchaseStatusRequest;
 import ru.miroro.api.purchase.dto.CreatePurchaseRequest;
 import ru.miroro.api.purchase.dto.PurchaseResponseDto;
 import ru.miroro.api.purchase.service.PurchaseService;
@@ -83,11 +84,12 @@ public class PurchaseController {
         @ApiResponse(responseCode = "404", description = "Покупка не найдена"),
         @ApiResponse(responseCode = "409", description = "Конфликт с ограничениями бд")
     })
-    @PatchMapping
+    @PatchMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> changeStatus(@RequestParam("id") int id, @RequestParam("new_status") String newStatus) {
+    public ResponseEntity<Void> changeStatus(
+            @PathVariable int id, @RequestBody ChangePurchaseStatusRequest changePurchaseStatusRequest) {
 
-        service.changeStatus(id, newStatus);
+        service.changeStatus(id, changePurchaseStatusRequest.getNewStatus());
 
         return ResponseEntity.ok().build();
     }

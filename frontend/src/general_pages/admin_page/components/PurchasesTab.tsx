@@ -79,12 +79,15 @@ export default function PurchasesTab() {
     newStatus: string,
   ) {
     try {
-      const response = await fetch(
-        `/api/purchases?id=${purchaseId}&new_status=${encodeURIComponent(newStatus)}`,
-        {
-          method: 'PATCH',
+      const response = await fetch(`/api/purchases/${purchaseId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
         },
-      );
+        body: JSON.stringify({
+          newStatus,
+        }),
+      });
 
       if (!response.ok) {
         throw new Error(
