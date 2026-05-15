@@ -74,6 +74,31 @@ public class ProductController {
         }
     }
 
+    @GetMapping("/most-expensive")
+    @Operation(summary = "Получить самый дорогой продукт")
+    public ResponseEntity<ProductDto> getMostExpensiveProduct() {
+
+        try {
+            ProductDto product = service.getMostExpensiveProduct();
+
+            log.atInfo()
+                    .addKeyValue("endpoint", "GET /api/products/most-expensive")
+                    .addKeyValue("result", "found")
+                    .log("Получение самого дорогого товара");
+
+            return ResponseEntity.ok(product);
+
+        } catch (Exception e) {
+
+            log.atWarn()
+                    .addKeyValue("endpoint", "GET /api/products/most-expensive")
+                    .addKeyValue("result", "not_found")
+                    .log("Самый дорогой товар не найден");
+
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+
     @Operation(summary = "Создать товар с изображениями")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Товар создан"),

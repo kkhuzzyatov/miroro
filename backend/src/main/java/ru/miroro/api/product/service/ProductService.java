@@ -54,6 +54,13 @@ public class ProductService {
                 .orElse(null);
     }
 
+    public ProductDto getMostExpensiveProduct() {
+        return productRepository
+                .findMostExpensiveProduct()
+                .map(product -> conversionService.convert(product, ProductDto.class))
+                .orElse(null);
+    }
+
     // =====================================================
     // CREATE
     // =====================================================
