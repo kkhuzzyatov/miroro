@@ -125,10 +125,10 @@ public class UserController {
         @ApiResponse(responseCode = "403", description = "Доступ запрещён"),
         @ApiResponse(responseCode = "404", description = "Пользователь не найден")
     })
-    @DeleteMapping
+    @DeleteMapping("/{username}")
     @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteByUsername(@RequestParam("username") String username) {
+    public void deleteByUsername(@PathVariable String username) {
         userService.deleteByUsername(username);
     }
 }

@@ -30,12 +30,19 @@ public class ProductController {
         @ApiResponse(responseCode = "404", description = "Товар не найден")
     })
     @GetMapping
-    public ResponseEntity<?> getProducts(@RequestParam(value = "id", required = false) Integer id) {
+    public ResponseEntity<?> getProducts() {
 
-        if (id == null) {
-            List<ProductDto> products = service.findAll();
-            return ResponseEntity.ok(products);
-        }
+        List<ProductDto> products = service.findAll();
+        return ResponseEntity.ok(products);
+    }
+
+    @Operation(summary = "Получить товар")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Успешный ответ"),
+        @ApiResponse(responseCode = "404", description = "Товар не найден")
+    })
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getProduct(@PathVariable Integer id) {
 
         try {
             ProductDto product = service.findById(id);
