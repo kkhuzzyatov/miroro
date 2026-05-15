@@ -1,15 +1,14 @@
-package ru.miroro.api.product_item.mapper;
+package ru.miroro.api.product_item.converter;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 import ru.miroro.api.product_item.dto.ProductItemResponse;
 
 @Component
-public class ProductItemResponseMapper implements RowMapper<ProductItemResponse> {
-    @Override
-    public ProductItemResponse mapRow(ResultSet rs, int rowNum) throws SQLException {
+public class ResultSetToProductItemResponseConverter {
+
+    public ProductItemResponse convert(ResultSet rs) throws SQLException {
         return ProductItemResponse.builder()
                 .productItemId(rs.getInt("product_item_id"))
                 .productName(rs.getString("product_name"))

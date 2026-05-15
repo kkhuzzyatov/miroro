@@ -4,11 +4,11 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.miroro.api.purchase.dto.*;
 import ru.miroro.api.purchase.entity.*;
-import ru.miroro.api.purchase.mapper.PurchaseMapper;
 import ru.miroro.api.purchase.repository.*;
 
 @RequiredArgsConstructor
@@ -21,21 +21,19 @@ public class PurchaseService {
     private final PurchaseItemRepository itemRepository;
     private final ItemOfProductItemRepository itemOfProductItemRepository;
     private final PurchaseStatusHistoryRepository historyRepository;
-    private final PurchaseMapper purchaseMapper;
+    private final ConversionService conversionService;
 
     @Transactional(readOnly = true)
     public List<PurchaseResponseDto> findAll() {
 
-        return purchaseRepository.findAllFull().stream()
-                .map(purchaseMapper::toDto)
-                .toList();
+        return purchaseRepository.findAllFull().stream().map(this::convertToDto).toList();
     }
 
     @Transactional(readOnly = true)
     public List<PurchaseResponseDto> findByUserId(int userId) {
 
         return purchaseRepository.findByUserIdFull(userId).stream()
-                .map(purchaseMapper::toDto)
+                .map(this::convertToDto)
                 .toList();
     }
 
@@ -45,11 +43,16 @@ public class PurchaseService {
                 .findByName("ожидание передачи в пункт отправки")
                 .orElseThrow();
 
-        PurchaseEntity purchase = purchaseRepository.save(PurchaseEntity.builder()
-                .userId(userId)
-                .statusId(status.getId())
-                .addressId(request.getAddressId())
-                .build());
+        PurchaseEntity purchase = conversionService.convert(request, PurchaseEntity.class);
+
+        if (purchase == null) {
+            throw new IllegalArgumentException("message: Невозможно создать заказ из запроса");
+        }
+
+        purchase.setUserId(userId);
+        purchase.setStatusId(status.getId());
+
+        purchase = purchaseRepository.save(purchase);
 
         historyRepository.save(
                 new PurchaseStatusHistoryEntity(null, purchase.getId(), status.getId(), LocalDateTime.now()));
@@ -95,5 +98,9 @@ public class PurchaseService {
         purchaseRepository.save(purchase);
 
         historyRepository.save(new PurchaseStatusHistoryEntity(null, purchaseId, oldStatus, LocalDateTime.now()));
+    }
+
+    private PurchaseResponseDto convertToDto(PurchaseEntity entity) {
+        return conversionService.convert(entity, PurchaseResponseDto.class);
     }
 }

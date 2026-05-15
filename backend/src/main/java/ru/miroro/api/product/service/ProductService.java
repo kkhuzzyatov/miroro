@@ -5,14 +5,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import ru.miroro.api.product.dto.ProductDto;
 import ru.miroro.api.product.dto.VariantDto;
-import ru.miroro.api.product.mapper.ProductMapper;
 import ru.miroro.api.product.model.Image;
 import ru.miroro.api.product.model.Product;
 import ru.miroro.api.product.model.Variant;
@@ -28,7 +29,7 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final VariantRepository variantRepository;
     private final ImageRepository imageRepository;
-    private final ProductMapper productMapper;
+    private final ConversionService conversionService;
 
     @Value("${app.upload.img-path}")
     private String imageDir;
@@ -40,14 +41,17 @@ public class ProductService {
     @Transactional(readOnly = true)
     public List<ProductDto> findAll() {
         return productRepository.findAllByOrderByIdAsc().stream()
-                .map(productMapper::toDto)
+                .map(product -> conversionService.convert(product, ProductDto.class))
                 .toList();
     }
 
     @Transactional(readOnly = true)
     public ProductDto findById(int id) {
 
-        return productRepository.findById(id).map(productMapper::toDto).orElse(null);
+        return productRepository
+                .findById(id)
+                .map(product -> conversionService.convert(product, ProductDto.class))
+                .orElse(null);
     }
 
     // =====================================================
@@ -56,7 +60,12 @@ public class ProductService {
 
     public ProductDto create(ProductDto dto, List<MultipartFile> imageFiles) throws IOException {
 
-        Product product = productMapper.toEntity(dto);
+        Product product = conversionService.convert(dto, Product.class);
+
+        if (product == null) {
+            return null;
+        }
+
         Product saved = productRepository.save(product);
 
         // VARIANTS
@@ -80,7 +89,7 @@ public class ProductService {
 
         return productRepository
                 .findById(saved.getId())
-                .map(productMapper::toDto)
+                .map(p -> conversionService.convert(p, ProductDto.class))
                 .orElse(null);
     }
 

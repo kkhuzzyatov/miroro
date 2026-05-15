@@ -3,6 +3,7 @@ package ru.miroro.api.user.service;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +17,7 @@ import ru.miroro.api.user.repository.UserRepository;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final ConversionService conversionService;
 
     // ============================
     // FIND BY ID
@@ -46,11 +48,14 @@ public class UserService {
     // ============================
     public User create(UserDtoRequest dto) {
 
-        User user = User.builder()
-                .username(dto.getUsername())
-                .passwordHash(hashPassword(dto.getPassword()))
-                .role("customer")
-                .build();
+        User user = conversionService.convert(dto, User.class);
+
+        if (user == null) {
+            return null;
+        }
+
+        user.setPasswordHash(hashPassword(dto.getPassword()));
+        user.setRole("customer");
 
         try {
             return userRepository.save(user);
