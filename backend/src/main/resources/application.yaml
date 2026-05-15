@@ -27,3 +27,8 @@ cdek:
     client-id: ${CDEK_CLIENT_ID}
     client-secret: ${CDEK_CLIENT_SECRET}
     country-code: RU
+
+logging:
+  structured:
+    format:
+      console: ecs

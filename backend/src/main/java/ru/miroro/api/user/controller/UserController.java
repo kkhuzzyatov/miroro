@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -16,6 +17,7 @@ import ru.miroro.api.user.dto.UserDtoRequest;
 import ru.miroro.api.user.entity.User;
 import ru.miroro.api.user.service.UserService;
 
+@Slf4j
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/users")
@@ -24,9 +26,6 @@ public class UserController {
 
     private final UserService userService;
 
-    // ============================
-    // CREATE USER
-    // ============================
     @Operation(summary = "Создание пользователя")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Пользователь создан"),
@@ -35,14 +34,17 @@ public class UserController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public User create(@RequestBody UserDtoRequest dto) {
+
+        log.atInfo()
+                .addKeyValue("endpoint", "POST /api/users")
+                .addKeyValue("username", dto.getUsername())
+                .log("Создание пользователя");
+
         User user = userService.create(dto);
         user.setPasswordHash(null);
         return user;
     }
 
-    // ============================
-    // UPDATE USER
-    // ============================
     @Operation(summary = "Обновление пользователя")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Пользователь обновлён"),
@@ -50,14 +52,20 @@ public class UserController {
         @ApiResponse(responseCode = "404", description = "Пользователь не найден")
     })
     @PutMapping("/{id}")
-    public User update(@PathVariable Integer userId, @RequestBody UserDtoRequest dto, Authentication authentication) {
+    public User update(@PathVariable Integer id, @RequestBody UserDtoRequest dto, Authentication authentication) {
+
+        log.atInfo()
+                .addKeyValue("endpoint", "PUT /api/users/{id}")
+                .addKeyValue("userId", id)
+                .addKeyValue("authUser", authentication != null ? authentication.getName() : null)
+                .log("Обновление пользователя");
 
         if (authentication == null) {
             throw new SessionAuthenticationException("message: Не авторизован");
         }
 
         User target = userService
-                .findById(userId)
+                .findById(id)
                 .orElseThrow(() -> new NoSuchElementException("message: Пользователь не найден"));
 
         boolean isAdmin = authentication.getAuthorities().stream()
@@ -69,15 +77,12 @@ public class UserController {
             throw new SecurityException("message: Недостаточно прав");
         }
 
-        User updated = userService.update(userId, dto);
+        User updated = userService.update(id, dto);
         updated.setPasswordHash(null);
 
         return updated;
     }
 
-    // ============================
-    // GET CURRENT USER
-    // ============================
     @Operation(summary = "Получение текущего пользователя")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Пользователь найден"),
@@ -85,6 +90,11 @@ public class UserController {
     })
     @GetMapping("/me")
     public User me(Authentication authentication) {
+
+        log.atInfo()
+                .addKeyValue("endpoint", "GET /api/users/me")
+                .addKeyValue("authUser", authentication != null ? authentication.getName() : null)
+                .log("Получение текущего пользователя");
 
         if (authentication == null) {
             throw new SessionAuthenticationException("message: Не авторизован");
@@ -98,9 +108,6 @@ public class UserController {
         return user;
     }
 
-    // ============================
-    // GET ALL USERS (ADMIN)
-    // ============================
     @Operation(summary = "Получение всех пользователей")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Список пользователей"),
@@ -110,15 +117,16 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN')")
     public List<User> findAll() {
 
-        List<User> users = userService.findAll();
+        log.atInfo()
+                .addKeyValue("endpoint", "GET /api/users")
+                .addKeyValue("role", "ADMIN")
+                .log("Получение всех пользователей");
 
+        List<User> users = userService.findAll();
         users.forEach(u -> u.setPasswordHash(null));
         return users;
     }
 
-    // ============================
-    // DELETE USER BY USERNAME (ADMIN)
-    // ============================
     @Operation(summary = "Удаление пользователя по username")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Пользователь удалён"),
@@ -129,6 +137,12 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteByUsername(@PathVariable String username) {
+
+        log.atInfo()
+                .addKeyValue("endpoint", "DELETE /api/users/{username}")
+                .addKeyValue("username", username)
+                .log("Удаление пользователя");
+
         userService.deleteByUsername(username);
     }
 }

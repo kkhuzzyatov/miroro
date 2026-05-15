@@ -8,12 +8,14 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.miroro.api.session.dto.LoginRequest;
 import ru.miroro.api.session.model.Session;
 import ru.miroro.api.session.service.SessionService;
 
+@Slf4j
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/sessions")
@@ -35,10 +37,15 @@ public class SessionController {
         Cookie cookie = new Cookie("session_token", session.getToken());
         cookie.setHttpOnly(true);
         cookie.setPath("/");
-        cookie.setMaxAge(7 * 24 * 60 * 60); // 7 дней
+        cookie.setMaxAge(7 * 24 * 60 * 60);
         response.addCookie(cookie);
 
-        System.out.println("new_session: " + session.getUsername());
+        log.atInfo()
+                .addKeyValue("endpoint", "POST /api/sessions/login")
+                .addKeyValue("username", session.getUsername())
+                .addKeyValue("sessionId", session.getSessionId())
+                .log("Создана сессия");
+
         return session;
     }
 
@@ -51,6 +58,12 @@ public class SessionController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void logout(
             @CookieValue(value = "session_token", required = false) String token, HttpServletResponse response) {
+
+        log.atInfo()
+                .addKeyValue("endpoint", "POST /api/sessions/logout")
+                .addKeyValue("hasToken", token != null && !token.isBlank())
+                .log("Выход из системы");
+
         if (token == null || token.isBlank()) {
             throw new SecurityException("message: Не авторизован");
         }
@@ -74,6 +87,11 @@ public class SessionController {
         if (token != null && !token.isBlank()) {
             authenticated = sessionService.isValid(token);
         }
+
+        log.atInfo()
+                .addKeyValue("endpoint", "GET /api/sessions/me")
+                .addKeyValue("authenticated", authenticated)
+                .log("Проверка сессии");
 
         return Map.of("authenticated", authenticated);
     }

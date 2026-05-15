@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,6 +19,7 @@ import ru.miroro.api.purchase.service.PurchaseService;
 import ru.miroro.api.user.entity.User;
 import ru.miroro.api.user.repository.UserRepository;
 
+@Slf4j
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/purchases")
@@ -45,6 +47,11 @@ public class PurchaseController {
 
         Integer userId = resolveUserId(authentication);
 
+        log.atInfo()
+                .addKeyValue("endpoint", "GET /api/purchases")
+                .addKeyValue("userId", userId)
+                .log("Получение покупок пользователя");
+
         return ResponseEntity.ok(service.findByUserId(userId));
     }
 
@@ -56,6 +63,8 @@ public class PurchaseController {
     @GetMapping("/all")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<PurchaseResponseDto>> getAllPurchases() {
+
+        log.atInfo().addKeyValue("endpoint", "GET /api/purchases/all").log("Получение всех покупок (admin)");
 
         return ResponseEntity.ok(service.findAll());
     }
@@ -71,6 +80,14 @@ public class PurchaseController {
     public ResponseEntity<Void> create(@RequestBody CreatePurchaseRequest request, Authentication authentication) {
 
         Integer userId = resolveUserId(authentication);
+
+        log.atInfo()
+                .addKeyValue("endpoint", "POST /api/purchases")
+                .addKeyValue("userId", userId)
+                .addKeyValue(
+                        "itemsCount",
+                        request.getItems() == null ? 0 : request.getItems().size())
+                .log("Создание покупки");
 
         service.create(request, userId);
 
@@ -88,6 +105,12 @@ public class PurchaseController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> changeStatus(
             @PathVariable int id, @RequestBody ChangePurchaseStatusRequest changePurchaseStatusRequest) {
+
+        log.atInfo()
+                .addKeyValue("endpoint", "PATCH /api/purchases/{id}")
+                .addKeyValue("purchaseId", id)
+                .addKeyValue("newStatus", changePurchaseStatusRequest.getNewStatus())
+                .log("Изменение статуса покупки");
 
         service.changeStatus(id, changePurchaseStatusRequest.getNewStatus());
 

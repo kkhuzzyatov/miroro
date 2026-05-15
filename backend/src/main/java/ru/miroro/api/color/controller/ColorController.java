@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,6 +15,7 @@ import ru.miroro.api.color.model.Color;
 import ru.miroro.api.color.repository.ColorRepository;
 import ru.miroro.api.color.service.ColorService;
 
+@Slf4j
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/colors")
@@ -29,6 +31,9 @@ public class ColorController {
     @ApiResponses({@ApiResponse(responseCode = "200", description = "Список цветов")})
     @GetMapping
     public ResponseEntity<List<Color>> getAll() {
+
+        log.atInfo().addKeyValue("endpoint", "GET /api/colors").log("Получение списка цветов");
+
         return ResponseEntity.ok(repo.findAll());
     }
 
@@ -43,6 +48,11 @@ public class ColorController {
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Color> create(@RequestBody Color color) {
+
+        log.atInfo()
+                .addKeyValue("endpoint", "POST /api/colors")
+                .addKeyValue("colorName", color.getName())
+                .log("Создание цвета");
 
         Color createdColor = service.create(color);
 
@@ -60,6 +70,12 @@ public class ColorController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Color> update(@PathVariable int id, @RequestBody Color color) {
 
+        log.atInfo()
+                .addKeyValue("endpoint", "PUT /api/colors/{id}")
+                .addKeyValue("colorId", id)
+                .addKeyValue("colorName", color.getName())
+                .log("Обновление цвета");
+
         Color updatedColor = service.update(id, color);
 
         return ResponseEntity.ok(updatedColor);
@@ -74,6 +90,11 @@ public class ColorController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteById(@PathVariable int id) {
+
+        log.atInfo()
+                .addKeyValue("endpoint", "DELETE /api/colors/{id}")
+                .addKeyValue("colorId", id)
+                .log("Удаление цвета");
 
         service.deleteById(id);
 

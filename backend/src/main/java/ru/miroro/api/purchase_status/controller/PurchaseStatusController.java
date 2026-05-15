@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.miroro.api.purchase_status.model.PurchaseStatus;
 import ru.miroro.api.purchase_status.repository.PurchaseStatusRepository;
 
+@Slf4j
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/purchase-statuses")
@@ -25,6 +27,12 @@ public class PurchaseStatusController {
     @ApiResponses({@ApiResponse(responseCode = "200", description = "Список статусов покупок")})
     @GetMapping
     public ResponseEntity<List<PurchaseStatus>> getAll() {
+
+        log.atInfo()
+                .addKeyValue("endpoint", "GET /api/purchase-statuses")
+                .addKeyValue("result", "success")
+                .log("Получение статусов покупок");
+
         return ResponseEntity.ok(repo.findAll());
     }
 }

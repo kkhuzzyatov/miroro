@@ -6,20 +6,15 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.miroro.api.size.model.Size;
 import ru.miroro.api.size.service.SizeService;
 
+@Slf4j
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/sizes")
@@ -33,6 +28,8 @@ public class SizeController {
     @GetMapping
     public ResponseEntity<List<Size>> getAll() {
 
+        log.atInfo().addKeyValue("endpoint", "GET /api/sizes").log("Получение всех размеров");
+
         return ResponseEntity.ok(sizeService.findAll());
     }
 
@@ -43,6 +40,11 @@ public class SizeController {
     })
     @GetMapping("/{id}")
     public ResponseEntity<Size> getById(@PathVariable int id) {
+
+        log.atInfo()
+                .addKeyValue("endpoint", "GET /api/sizes/{id}")
+                .addKeyValue("sizeId", id)
+                .log("Получение размера по id");
 
         Size size = sizeService.findById(id);
 
@@ -63,6 +65,11 @@ public class SizeController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Size> create(@RequestBody Size size) {
 
+        log.atInfo()
+                .addKeyValue("endpoint", "POST /api/sizes")
+                .addKeyValue("sizeName", size.getName())
+                .log("Создание размера");
+
         Size created = sizeService.create(size);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
@@ -78,6 +85,12 @@ public class SizeController {
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> update(@PathVariable int id, @RequestBody Size size) {
+
+        log.atInfo()
+                .addKeyValue("endpoint", "PUT /api/sizes/{id}")
+                .addKeyValue("sizeId", id)
+                .addKeyValue("sizeName", size.getName())
+                .log("Обновление размера");
 
         boolean updated = sizeService.update(id, size);
 
@@ -98,6 +111,11 @@ public class SizeController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable int id) {
+
+        log.atInfo()
+                .addKeyValue("endpoint", "DELETE /api/sizes/{id}")
+                .addKeyValue("sizeId", id)
+                .log("Удаление размера");
 
         boolean deleted = sizeService.deleteById(id);
 

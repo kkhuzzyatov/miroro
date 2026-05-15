@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.io.IOException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import ru.miroro.api.product.dto.ProductDto;
 import ru.miroro.api.product.service.ProductService;
 
+@Slf4j
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/products")
@@ -32,6 +34,11 @@ public class ProductController {
     @GetMapping
     public ResponseEntity<?> getProducts() {
 
+        log.atInfo()
+                .addKeyValue("endpoint", "GET /api/products")
+                .addKeyValue("result", "list")
+                .log("Получение списка товаров");
+
         List<ProductDto> products = service.findAll();
         return ResponseEntity.ok(products);
     }
@@ -46,8 +53,23 @@ public class ProductController {
 
         try {
             ProductDto product = service.findById(id);
+
+            log.atInfo()
+                    .addKeyValue("endpoint", "GET /api/products/{id}")
+                    .addKeyValue("productId", id)
+                    .addKeyValue("result", "found")
+                    .log("Получение товара");
+
             return ResponseEntity.ok(product);
+
         } catch (Exception e) {
+
+            log.atWarn()
+                    .addKeyValue("endpoint", "GET /api/products/{id}")
+                    .addKeyValue("productId", id)
+                    .addKeyValue("result", "not_found")
+                    .log("Товар не найден");
+
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
@@ -65,6 +87,12 @@ public class ProductController {
             @RequestPart("product") ProductDto productDto,
             @RequestPart(value = "images", required = false) List<MultipartFile> imageFiles)
             throws IOException {
+
+        log.atInfo()
+                .addKeyValue("endpoint", "POST /api/products")
+                .addKeyValue("productName", productDto.getName())
+                .addKeyValue("imagesCount", imageFiles == null ? 0 : imageFiles.size())
+                .log("Создание товара");
 
         ProductDto created = service.create(productDto, imageFiles);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
@@ -84,6 +112,12 @@ public class ProductController {
             @RequestPart(value = "images", required = false) List<MultipartFile> imageFiles)
             throws IOException {
 
+        log.atInfo()
+                .addKeyValue("endpoint", "PUT /api/products/{id}")
+                .addKeyValue("productId", id)
+                .addKeyValue("imagesCount", imageFiles == null ? 0 : imageFiles.size())
+                .log("Обновление товара");
+
         int updated = service.update(id, productDto, imageFiles);
 
         if (updated == 0) {
@@ -102,6 +136,11 @@ public class ProductController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteById(@PathVariable int id) {
+
+        log.atInfo()
+                .addKeyValue("endpoint", "DELETE /api/products/{id}")
+                .addKeyValue("productId", id)
+                .log("Удаление товара");
 
         int deleted = service.deleteById(id);
 
