@@ -105,7 +105,7 @@ export default function ProductPage() {
 
         if (variantIdParam && loadedProduct.variants.length) {
           const variant = loadedProduct.variants.find(
-            v => v.variant_id === Number(variantIdParam)
+            v => v.id === Number(variantIdParam)
           );
 
           if (variant && variant.quantity > 0) {
@@ -177,7 +177,7 @@ export default function ProductPage() {
   }, [product, selectedSize, selectedColor]);
 
   const stock = selectedVariant?.quantity ?? 0;
-  const currentVariantId = selectedVariant?.variant_id ?? null;
+  const currentVariantId = selectedVariant?.id ?? null;
 
   const cartItem = useMemo(() => {
     if (!product || currentVariantId === null) {
