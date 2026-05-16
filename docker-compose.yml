@@ -2,45 +2,77 @@ services:
   db:
     image: postgres:15
     container_name: db
+
     env_file:
       - .env
+
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
+
     ports:
       - "5432:5432"
+
     volumes:
       - pgdata:/var/lib/postgresql/data
+
+    networks:
+      - main
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+
+    ports:
+      - "6379:6379"
+
+    volumes:
+      - redisdata:/data
+
     networks:
       - main
 
   backend:
     image: khuzzyatov/miroro_backend:latest
     container_name: backend
+
     depends_on:
       - db
+      - redis
+
     env_file:
       - .env
+
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+
     ports:
       - "8080:8080"
+
     volumes:
       - ./backend/uploads:/uploads
+
     networks:
       - main
 
   frontend:
     image: khuzzyatov/miroro_frontend:latest
     container_name: frontend
+
     depends_on:
       - backend
+
     ports:
       - "5173:80"
+
     networks:
       - main
 
 volumes:
   pgdata:
+  redisdata:
 
 networks:
   main:

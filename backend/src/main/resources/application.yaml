@@ -1,5 +1,9 @@
-# Основное
 spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+
   jpa:
     hibernate:
       ddl-auto: validate
@@ -8,14 +12,14 @@ spring:
       hibernate:
         format_sql: true
 
-  datasource:
-    url: ${DB_URL}
-    username: ${DB_USER}
-    password: ${DB_PASSWORD}
-
   liquibase:
-    change-log: classpath:/migrations/master.xml
     enabled: true
+    change-log: classpath:/migrations/master.xml
+
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
 
 app:
   upload:
