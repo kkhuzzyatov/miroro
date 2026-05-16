@@ -6,7 +6,17 @@ import { useCitySearch } from "./useCitySearch";
 import type { City } from "./useCitySearch";
 
 import { useAddressSearch } from "./useAddressSearch";
-import type { Address } from "./useAddressSearch";
+
+/* ================= TYPES ================= */
+
+type Address = {
+  id: number;
+  address: string;
+  city: {
+    cityUuid: string;
+    name: string;
+  };
+};
 
 type Props = {
   isOpen: boolean;
@@ -30,12 +40,7 @@ function getCookie(name: string) {
 
 /* ================= COMPONENT ================= */
 
-export default function AddressModal({
-  isOpen,
-  onClose
-}: Props) {
-  /* ===== persisted state ===== */
-
+export default function AddressModal({ isOpen, onClose }: Props) {
   const [cityQuery, setCityQuery] = useState("");
   const [addressQuery, setAddressQuery] = useState("");
 
@@ -45,8 +50,6 @@ export default function AddressModal({
   const [cityOpen, setCityOpen] = useState(false);
   const [addressOpen, setAddressOpen] = useState(false);
 
-  /* ===== hooks ===== */
-
   const { cities, loading: cityLoading } = useCitySearch(cityQuery);
 
   const { addresses, loading: addressLoading } = useAddressSearch(
@@ -54,7 +57,7 @@ export default function AddressModal({
     addressQuery
   );
 
-  /* ================= RESTORE ON OPEN ================= */
+  /* ================= RESTORE ================= */
 
   useEffect(() => {
     if (!isOpen) return;
@@ -76,8 +79,12 @@ export default function AddressModal({
 
     if (savedAddressName && savedAddressId) {
       setSelectedAddress({
-        addressId: Number(savedAddressId),
+        id: Number(savedAddressId),
         address: decodeURIComponent(savedAddressName),
+        city: {
+          cityUuid: "",
+          name: "",
+        },
       });
 
       setAddressQuery(decodeURIComponent(savedAddressName));
@@ -110,8 +117,7 @@ export default function AddressModal({
   const selectAddress = (addr: Address) => {
     setSelectedAddress(addr);
     setAddressQuery(addr.address);
-
-    setAddressOpen(false); // 🔴 FIX: закрываем dropdown
+    setAddressOpen(false);
   };
 
   const resetAddress = () => {
@@ -127,11 +133,10 @@ export default function AddressModal({
     setCookie("city_id", selectedCity.city_uuid);
     setCookie("city_name", selectedCity.full_name);
 
-    setCookie("address_id", String(selectedAddress.addressId));
+    setCookie("address_id", String(selectedAddress.id));
     setCookie("address_name", selectedAddress.address);
 
     onClose();
-
     window.location.reload();
   };
 
@@ -161,7 +166,11 @@ export default function AddressModal({
           {cityOpen && cities.length > 0 && (
             <div className={styles.dropdown}>
               {cities.map((c) => (
-                <div className={styles.item} key={c.city_uuid} onClick={() => selectCity(c)}>
+                <div
+                  className={styles.item}
+                  key={c.city_uuid}
+                  onClick={() => selectCity(c)}
+                >
                   {c.full_name}
                 </div>
               ))}
@@ -190,8 +199,12 @@ export default function AddressModal({
 
             {addressOpen && addresses.length > 0 && (
               <div className={styles.dropdown}>
-                {addresses.map((a) => (
-                  <div className={styles.item} key={a.addressId} onClick={() => selectAddress(a)}>
+                {addresses.map((a: Address) => (
+                  <div
+                    className={styles.item}
+                    key={a.id}
+                    onClick={() => selectAddress(a)}
+                  >
                     {a.address}
                   </div>
                 ))}

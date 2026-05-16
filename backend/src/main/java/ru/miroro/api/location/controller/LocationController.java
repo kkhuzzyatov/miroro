@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import ru.miroro.api.location.entity.Address;
+import ru.miroro.api.location.dto.AddressDto;
 import ru.miroro.api.location.service.AddressService;
 import ru.miroro.integration.cdek.city.CdekCityService;
 
@@ -32,7 +32,7 @@ public class LocationController {
     }
 
     @GetMapping("/delivery_points")
-    public List<Address> getDeliveryPoints(
+    public List<AddressDto> getDeliveryPoints(
             @RequestParam("city_uuid") String cityUuid, @RequestParam(required = false) String name) {
 
         log.atInfo()
