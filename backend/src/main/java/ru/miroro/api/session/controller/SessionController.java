@@ -12,8 +12,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.miroro.api.session.dto.LoginRequest;
-import ru.miroro.api.session.model.Session;
+import ru.miroro.api.session.model.SessionData;
 import ru.miroro.api.session.service.SessionService;
+import ru.miroro.api.session.service.SessionStorageService;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -23,6 +24,7 @@ import ru.miroro.api.session.service.SessionService;
 public class SessionController {
 
     private final SessionService sessionService;
+    private final SessionStorageService sessionStorageService;
 
     @Operation(summary = "Вход пользователя (логин)")
     @ApiResponses({
@@ -30,23 +32,32 @@ public class SessionController {
         @ApiResponse(responseCode = "401", description = "Неверные учетные данные")
     })
     @PostMapping("/login")
-    public Session login(@RequestBody LoginRequest request, HttpServletResponse response) {
+    public Map<String, Object> login(@RequestBody LoginRequest request, HttpServletResponse response) {
 
-        Session session = sessionService.login(request.username(), request.password());
+        String token = sessionService.login(request.username(), request.password());
 
-        Cookie cookie = new Cookie("session_token", session.getToken());
+        SessionData session = sessionStorageService.get(token);
+
+        if (session == null) {
+            throw new IllegalStateException("Session not found in Redis");
+        }
+
+        Cookie cookie = new Cookie("session_token", token);
         cookie.setHttpOnly(true);
         cookie.setPath("/");
         cookie.setMaxAge(7 * 24 * 60 * 60);
+
         response.addCookie(cookie);
 
         log.atInfo()
                 .addKeyValue("endpoint", "POST /api/sessions/login")
                 .addKeyValue("username", session.getUsername())
-                .addKeyValue("sessionId", session.getSessionId())
+                .addKeyValue("role", session.getRole())
                 .log("Создана сессия");
 
-        return session;
+        return Map.of(
+                "username", session.getUsername(),
+                "role", session.getRole());
     }
 
     @Operation(summary = "Выход пользователя (logout)")
@@ -72,9 +83,10 @@ public class SessionController {
         cookie.setHttpOnly(true);
         cookie.setPath("/");
         cookie.setMaxAge(0);
+
         response.addCookie(cookie);
 
-        sessionService.logout(token);
+        sessionStorageService.delete(token);
     }
 
     @Operation(summary = "Проверка авторизации")
@@ -82,11 +94,7 @@ public class SessionController {
     @GetMapping("/me")
     public Map<String, Object> me(@CookieValue(value = "session_token", required = false) String token) {
 
-        boolean authenticated = false;
-
-        if (token != null && !token.isBlank()) {
-            authenticated = sessionService.isValid(token);
-        }
+        boolean authenticated = token != null && !token.isBlank() && sessionStorageService.exists(token);
 
         log.atInfo()
                 .addKeyValue("endpoint", "GET /api/sessions/me")

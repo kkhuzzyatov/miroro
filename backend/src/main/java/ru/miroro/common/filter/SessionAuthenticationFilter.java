@@ -14,6 +14,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import ru.miroro.api.session.model.SessionData;
 import ru.miroro.api.session.service.SessionService;
 
 @Component
@@ -37,9 +38,12 @@ public class SessionAuthenticationFilter extends OncePerRequestFilter {
             }
         }
 
-        if (token != null) {
+        if (token != null && !token.isBlank()) {
 
-            sessionService.getSessionByToken(token).ifPresent(session -> {
+            SessionData session = sessionService.getSessionByToken(token);
+
+            if (session != null) {
+
                 List<GrantedAuthority> authorities = List.of(
                         new SimpleGrantedAuthority("ROLE_" + session.getRole().toUpperCase()));
 
@@ -47,7 +51,7 @@ public class SessionAuthenticationFilter extends OncePerRequestFilter {
                         new UsernamePasswordAuthenticationToken(session.getUsername(), null, authorities);
 
                 SecurityContextHolder.getContext().setAuthentication(auth);
-            });
+            }
         }
 
         filterChain.doFilter(request, response);
